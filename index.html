@@ -1053,11 +1053,11 @@ async function loadUsers(){
   try{
     var j=await apiGet('users',{});
     S.users=j.data||[];
-    var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h2>Akun Login</h2><button class="btn small" id="btnAddUser">➕ Tambah User</button></div>';
+    var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h2>Akun Login</h2><button class="btn small" id="btnAddUser">'+ic('plus')+' Tambah User</button></div>';
     S.users.forEach(function(u){
       html+='<div class="list-row"><div class="grow"><b>'+esc(u.username)+'</b> — '+esc(u.nama)+' <span class="pill b">'+esc(u.role)+'</span></div>'+
         '<span class="pill '+(u.aktif?'g':'r')+'">'+(u.aktif?'aktif':'nonaktif')+'</span>'+
-        '<button class="btn small sec" data-uact="reset" data-uname="'+esc(u.username)+'">🔑 Reset</button>'+
+        '<button class="btn small sec" data-uact="reset" data-uname="'+esc(u.username)+'">'+ic('key')+' Reset</button>'+
         '<button class="btn small '+(u.aktif?'danger':'')+'" data-uact="toggle" data-uname="'+esc(u.username)+'" data-cur="'+(u.aktif?'1':'0')+'">'+(u.aktif?'Nonaktifkan':'Aktifkan')+'</button></div>';
     });
     $('adminBody').innerHTML=html;
@@ -1080,7 +1080,7 @@ function modalAddUser(){
     '<label>Role</label><select id="nuRole"><option value="OPERATOR">OPERATOR</option><option value="SPB">SPB (pantau)</option><option value="ADMIN">ADMIN</option></select>'+
     '<label>Password (min 6)</label><input id="nuPass" type="password">',
     function(){$('nuName').focus();},
-    [{label:'💾 Buat',cls:'',onClick:async function(){
+    [{label:ic('save')+' Buat',cls:'',onClick:async function(){
       try{
         await apiPost('createUser',{username:$('nuName').value.trim(),nama:$('nuNama').value.trim(),role:$('nuRole').value,password:$('nuPass').value});
         closeModal();toast('User dibuat','ok');loadUsers();
@@ -1089,7 +1089,7 @@ function modalAddUser(){
 }
 function modalResetPass(un){
   openModal('Reset Password',un,'<label>Password baru (min 6)</label><input id="rpNew" type="password">',null,
-    [{label:'🔑 Reset',cls:'',onClick:async function(){
+    [{label:ic('key')+' Reset',cls:'',onClick:async function(){
       try{await apiPost('resetPassword',{username:un,new_password:$('rpNew').value});closeModal();toast('Password direset','ok');}
       catch(e){toast(e.message,'err');}
     }},{label:'Batal',cls:'sec'}]);
@@ -1162,16 +1162,16 @@ function renderMonitor(){
   var tv=todayVisits();
   var st=computeStats(tv);
   $('monStats').innerHTML=statsHtml(statCards(st));
-  var cols=[{t:'Dijadwalkan',ic:'📅'},{t:'Tiba',ic:'🚚'},{t:'Sedang Bongkar',ic:'⚙️'},{t:'Selesai',ic:'✅'}];
+  var cols=[{t:'Dijadwalkan',ico:'calendar'},{t:'Tiba',ico:'truck'},{t:'Sedang Bongkar',ico:'activity'},{t:'Selesai',ico:'check-c'}];
   var parah=Number(S.settings['threshold_telat_parah_menit'])||60;
   $('kanban').innerHTML=cols.map(function(c){
     var arr=tv.filter(function(v){return v.status===c.t;}).sort(function(a,b){return (a.dock||99)-(b.dock||99);});
-    return '<div class="kcol"><div class="kh"><span>'+c.ic+' '+c.t+'</span><span>'+arr.length+'</span></div>'+
+    return '<div class="kcol"><div class="kh"><span>'+ic(c.ico)+' '+c.t+'</span><span>'+arr.length+'</span></div>'+
       arr.map(function(v){
         var cls=c.t==='Tiba'?'c1':c.t==='Sedang Bongkar'?'c2':'c3';
         var t='',hot=false;
-        if(c.t==='Tiba'&&v.aktual_tiba){var w=minsSince(v.aktual_tiba,nowMs());t='Menunggu '+durStr(w);if(w>=parah){hot=true;t='⚠️ '+t;}}
-        else if(c.t==='Sedang Bongkar'&&v.mulai_bongkar){t='Bongkar '+durStr(runningBongkarMin(v))+(v.break_start&&!v.break_end?' ☕':'');}
+        if(c.t==='Tiba'&&v.aktual_tiba){var w=minsSince(v.aktual_tiba,nowMs());t='Menunggu '+durStr(w);if(w>=parah){hot=true;t=ic('alert')+' '+t;}}
+        else if(c.t==='Sedang Bongkar'&&v.mulai_bongkar){t='Bongkar '+durStr(runningBongkarMin(v))+(v.break_start&&!v.break_end?' '+ic('coffee'):'');}
         else if(c.t==='Dijadwalkan'&&v.plan_tiba){var df=Math.round((nowMsOf(v.plan_tiba)-nowMs())/60000);t=df>0?('Plan '+durStr(df)+' lagi'):('Telat '+durStr(-df));if(df<-30){hot=true;}}
         else if(c.t==='Selesai'){t='T'+durStr(v.durasi_tunggu_menit)+' B'+durStr(v.durasi_bongkar_menit);}
         return '<div class="kcard '+cls+(hot?' late':'')+'"><div class="p">'+esc(v.no_polisi||'-')+(v.dock?' <small style="color:var(--work)">D'+v.dock+'</small>':'')+'</div>'+
