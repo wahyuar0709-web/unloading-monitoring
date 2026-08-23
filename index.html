@@ -1196,18 +1196,21 @@ function renderMonitor(){
   var parah=Number(S.settings['threshold_telat_parah_menit'])||60;
   $('kanban').innerHTML=cols.map(function(c){
     var arr=tv.filter(function(v){return v.status===c.t;}).sort(function(a,b){return (a.dock||99)-(b.dock||99);});
-    return '<div class="kcol"><div class="kh"><span>'+ic(c.ico)+' '+c.t+'</span><span>'+arr.length+'</span></div>'+
-      arr.map(function(v){
+    var cards=arr.map(function(v){
         var cls=c.t==='Tiba'?'c1':c.t==='Sedang Bongkar'?'c2':'c3';
         var t='',hot=false;
-        if(c.t==='Tiba'&&v.aktual_tiba){var w=minsSince(v.aktual_tiba,nowMs());t='Menunggu '+durStr(w);if(w>=parah){hot=true;t=ic('alert')+' '+t;}}
-        else if(c.t==='Sedang Bongkar'&&v.mulai_bongkar){t='Bongkar '+durStr(runningBongkarMin(v))+(v.break_start&&!v.break_end?' '+ic('coffee'):'');}
+        if(c.t==='Tiba'&&v.aktual_tiba){var w=minsSince(v.aktual_tiba,nowMs());t='Menunggu '+durStr(w);if(w>=parah)hot=true;}
+        else if(c.t==='Sedang Bongkar'&&v.mulai_bongkar){t='Bongkar '+durStr(runningBongkarMin(v));}
         else if(c.t==='Dijadwalkan'&&v.plan_tiba){var df=Math.round((nowMsOf(v.plan_tiba)-nowMs())/60000);t=df>0?('Plan '+durStr(df)+' lagi'):('Telat '+durStr(-df));if(df<-30){hot=true;}}
         else if(c.t==='Selesai'){t='T'+durStr(v.durasi_tunggu_menit)+' B'+durStr(v.durasi_bongkar_menit);}
+        var tpre=(c.t==='Tiba'&&hot)?ic('alert')+' ':'';
+        var tsuf=(c.t==='Sedang Bongkar'&&v.break_start&&!v.break_end)?' '+ic('coffee'):'';
         return '<div class="kcard '+cls+(hot?' late':'')+'"><div class="p">'+esc(v.no_polisi||'-')+(v.dock?' <small style="color:var(--work)">D'+v.dock+'</small>':'')+'</div>'+
-          '<div class="s">'+esc(v.vendor||'')+'</div><div class="t'+(hot?' hot':'')+'">'+esc(t)+'</div>'+
+          '<div class="s">'+esc(v.vendor||'')+'</div><div class="t'+(hot?' hot':'')+'">'+tpre+esc(t)+tsuf+'</div>'+
           '<div class="ops">'+esc((v.operator_tiba?'T:'+v.operator_tiba:'')+(v.operator_bongkar?(v.operator_tiba?' · ':'')+'B:'+v.operator_bongkar:''))+'</div></div>';
-      }).join('')||'<div class="empty">Kosong</div>'+'</div>';
+      }).join('');
+    return '<div class="kcol"><div class="kh"><span>'+ic(c.ico)+' '+c.t+'</span><span>'+arr.length+'</span></div>'+
+      (cards||'<div class="empty">Kosong</div>')+'</div>';
   }).join('');
   var f=S.fMon=readFilters('mDate','mVendor','mStatus');
   var isDefault=(!f.date||f.date===todayJak())&&!f.vendor&&!f.status;
