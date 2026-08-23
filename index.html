@@ -8,216 +8,291 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" href='data:application/manifest+json,{"name":"Unloading Monitor","short_name":"Unloading","display":"standalone","background_color":"%230f172a","theme_color":"%230f172a","start_url":".","icons":[]}'>
+<link rel="manifest" href="manifest.json">
 <style>
+/* ============ TOKENS ============ */
 :root{
-  --bg:#f1f5f9; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
-  --primary:#2563eb; --primary-d:#1d4ed8; --ok:#16a34a; --warn:#d97706; --bad:#dc2626;
+  --bg:#f1f5f9; --card:#ffffff; --field:#ffffff;
+  --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+  --primary:#2563eb; --primary-d:#1d4ed8; --primary-soft:#eff6ff;
+  --ok:#16a34a; --warn:#d97706; --bad:#dc2626;
   --sched:#64748b; --tiba:#0284c7; --work:#d97706; --done:#16a34a; --cancel:#dc2626;
-  --dark:#0f172a; --dark2:#1e293b;
-  --r:12px; --sh:0 1px 3px rgba(15,23,42,.12);
+  --dark:#0f172a; --dark2:#1e293b; --dark-ink:#e2e8f0; --dark-mut:#94a3b8;
+  --soft:#f8fafc; --seg:#e2e8f0; --kcol:#e8edf3; --kh-ink:#334155;
+  --err-bg:#fef2f2; --err-line:#fecaca;
+  --p-g-bg:#dcfce7; --p-b-bg:#dbeafe;
+  --shadow:0 1px 3px rgba(15,23,42,.12);
+  --shadow-up:0 4px 14px rgba(15,23,42,.10);
+  --r:12px;
 }
-
-/* ---------- Responsive improvements for screens < 600px ---------- */
-@media(max-width:599px){
-  .cols{grid-template-columns:1fr!important;}
-  .kanban{grid-template-columns:1fr!important;}
-  .stats{grid-template-columns:1fr!important;}
-  .tbl th,.tbl td{font-size:12px; padding:6px 8px;}
-  .trk{padding:8px;margin-bottom:8px;}
-  .trk .row1{flex-direction:column;gap:4px;}
-  .trk .plate{font-size:15px;}
-  .badge{font-size:10px;padding:2px 6px;}
-  .acts{flex-direction:column;gap:4px;}
-  .acts button{width:100%;min-width:auto;padding:8px;font-size:12px;}
-  .row1{flex-direction:column;gap:2px;}
-  .meta{border-top:1px solid var(--line);padding-top:8px;margin-top:8px;}
-  .empty{padding:20px 10px;font-size:12px;}
-  .kcol{padding:8px;margin-bottom:6px;}
-  .kcol .kh{font-size:12px;padding:2px 2px 4px;}
-  .kcard{padding:8px;margin-bottom:6px;}
-  .kcard .p{font-size:14px;}
-  .kcard .s{font-size:11px;}
-  .kcard .t{font-size:12px;margin-top:2px;}
-  .stats .v{font-size:20px;}
-  .stat .l{font-size:10px;margin-top:1px;}
-  .subnav button{font-size:12px;padding:6px 10px;}
-  .list-row{font-size:13px;padding:8px 2px;}
-  .list-row .grow{min-width:100px;}
-  .pill{font-size:10px;padding:2px 6px;}
-  .maxh{max-height:300px;}
-  .maxh table{font-size:11px;}
-  .maxh thead th{font-size:10px;}
-  .maxh td{padding:4px 2px;}
-  .radio-set label.rdo{gap:6px;padding:6px 8px;font-size:12px;}
-  .urlbox summary{font-size:12px;}
-  .dot{width:7px;height:7px;}
-  .tbtn{padding:6px 8px;font-size:12px;}
-  .btn{padding:9px 10px;font-size:13px;}
-  .btn.small{padding:5px 8px;font-size:11px;}
-  .seg button{padding:6px 5px;font-size:12px;}
-  .stats{grid-template-columns:1fr!important;gap:8px;}
-  .stat .v{font-size:18px;}
+[data-theme="dark"]{
+  --bg:#0b1220; --card:#111a2c; --field:#0e1626;
+  --ink:#e2e8f0; --muted:#8aa0b8; --line:#22304a;
+  --primary:#3b82f6; --primary-d:#2563eb; --primary-soft:#12233f;
+  --soft:#16223a; --seg:#1a2740; --kcol:#16223a; --kh-ink:#9fb3cd;
+  --err-bg:#2a1414; --err-line:#5c2020;
+  --p-g-bg:#12301f; --p-b-bg:#152a45;
+  --shadow:0 1px 3px rgba(0,0,0,.4);
+  --shadow-up:0 4px 14px rgba(0,0,0,.45);
 }
+[data-theme="dark"] .badge{opacity:.95}
+[data-theme="dark"] .tbtn{background:#1a2740;color:#cbd5e1}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:var(--field)}
+[data-theme="dark"] .btn.sec{background:#22304a;color:var(--ink)}
 
-/* ---------- End responsive improvements ---------- */
+/* ============ BASE ============ */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:15px}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:15px;transition:background .25s,color .25s}
 button{font-family:inherit;cursor:pointer;border:none;border-radius:9px;font-weight:600}
-input,select,textarea{font-family:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;width:100%;background:#fff;color:var(--ink)}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--primary);outline-offset:-1px}
+input,select,textarea{font-family:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;width:100%;background:var(--field);color:var(--ink);transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--primary);outline-offset:-1px;border-color:transparent}
 label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:10px 0 4px}
+label .helper{font-weight:500;color:var(--muted);opacity:.75}
 .hide{display:none!important}
+.tnum{font-variant-numeric:tabular-nums}
+.ic{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-0.135em;flex-shrink:0}
+.ic.lg{width:1.35em;height:1.35em}
 
-/* ---------- LOGIN ---------- */
+/* ============ LOGIN ============ */
 #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px;background:linear-gradient(160deg,var(--dark) 0%,#1e3a5f 100%)}
 .login-card{background:var(--card);border-radius:16px;padding:26px 22px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
-.login-logo{text-align:center;font-size:44px;margin-bottom:4px}
-.login-card h1{font-size:19px;text-align:center;margin-bottom:2px}
-.login-card p.sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:14px}
-.btn{padding:11px 16px;background:var(--primary);color:#fff;width:100%;font-size:15px;margin-top:14px}
+.login-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px;color:var(--primary)}
+.login-logo .ic{width:34px;height:34px;stroke-width:1.8}
+.login-card h1{font-size:20px;font-weight:800;text-align:center;margin-bottom:2px;letter-spacing:-.2px}
+.login-card p.sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:16px}
+.btn{padding:11px 16px;background:var(--primary);color:#fff;width:100%;font-size:15px;margin-top:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:filter .15s,transform .1s}
+.btn:hover:not(:disabled){filter:brightness(1.07)}
 .btn:active{transform:scale(.98)}
-.btn:disabled{opacity:.6}
-.btn.sec{background:#e2e8f0;color:var(--ink)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.sec{background:var(--seg);color:var(--ink)}
 .btn.danger{background:var(--bad)}
 .btn.small{width:auto;padding:7px 12px;font-size:13px;margin-top:0}
 details.urlbox{margin-bottom:6px}
 details.urlbox summary{cursor:pointer;font-size:13px;color:var(--primary);font-weight:600}
-.err-msg{background:#fef2f2;color:var(--bad);border:1px solid #fecaca;padding:9px 12px;border-radius:9px;font-size:13px;margin-top:12px}
+.err-msg{background:var(--err-bg);color:var(--bad);border:1px solid var(--err-line);padding:9px 12px;border-radius:9px;font-size:13px;margin-top:12px}
 
-/* ---------- TOPBAR ---------- */
+/* ============ TOPBAR ============ */
 header.top{position:sticky;top:0;z-index:40;background:var(--dark);color:#fff;display:flex;align-items:center;gap:8px;padding:10px 14px}
-header.top .ttl{font-weight:700;font-size:15px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header.top .ttl{font-weight:700;font-size:15px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:7px}
+header.top .ttl .ic{color:var(--tiba);width:18px;height:18px}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);flex-shrink:0}
 .dot.off{background:var(--bad)}
-.tbtn{background:var(--dark2);color:#e2e8f0;padding:8px 11px;font-size:13px;border-radius:8px;flex-shrink:0}
-.tbtn.active{background:var(--primary)}
+.tbtn{background:var(--dark2);color:var(--dark-ink);padding:8px 11px;font-size:13px;border-radius:8px;flex-shrink:0;display:inline-flex;align-items:center;gap:6px;transition:background .15s}
+.tbtn:hover{background:#2b3b57}
+.tbtn.active{background:var(--primary);color:#fff}
 
-/* ---------- TABS ---------- */
+/* ============ TABS ============ */
 nav.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:49px;z-index:39}
-nav.tabs button{flex:1;background:none;color:var(--muted);padding:12px 4px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;border-radius:0}
+nav.tabs button{flex:1;background:none;color:var(--muted);padding:11px 4px;font-size:13px;font-weight:600;border-bottom:3px solid transparent;border-radius:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:color .15s,border-color .15s}
 nav.tabs button.on{color:var(--primary);border-bottom-color:var(--primary)}
 main{max-width:1180px;margin:0 auto;padding:14px 12px 90px}
 body[data-mode="monitor"] main{max-width:none;padding-bottom:20px}
+section[id^="view"]:not(.hide){animation:viewIn .18s ease}
+@keyframes viewIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 
-/* ---------- CARDS QUEUE ---------- */
+/* ============ QUEUE CARDS ============ */
 .cols{display:grid;grid-template-columns:1fr;gap:12px}
 @media(min-width:900px){.cols{grid-template-columns:repeat(4,1fr)}}
 .col-h{display:flex;align-items:center;gap:7px;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);padding:4px 4px 8px}
-.col-h .n{background:var(--line);border-radius:99px;padding:1px 8px;font-size:12px}
-.trk{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:12px;margin-bottom:10px;border-left:5px solid var(--sched)}
-.trk.st-Tiba{border-left-color:var(--tiba)}
-.trk.st-SedangBongkar{border-left-color:var(--work)}
-.trk.st-Selesai{border-left-color:var(--done)}
-.trk.st-Dibatalkan{border-left-color:var(--cancel);opacity:.65}
-.trk.late{animation:blink 1s infinite}
-@keyframes blink{0%,100%{background:#fff}50%{background:#fee2e2}}
+.col-h .ic{width:15px;height:15px}
+.col-h .n{background:var(--seg);color:var(--muted);border-radius:99px;padding:1px 8px;font-size:12px;font-variant-numeric:tabular-nums}
+.trk{position:relative;background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 12px 12px 17px;margin-bottom:10px;overflow:hidden;transition:transform .15s,box-shadow .15s}
+.trk::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--sched)}
+.trk.st-Tiba::before{background:var(--tiba)}
+.trk.st-SedangBongkar::before{background:var(--work)}
+.trk.st-Selesai::before{background:var(--done)}
+.trk.st-Dibatalkan::before{background:var(--cancel)}
+.trk.st-Dibatalkan{opacity:.65}
+.trk:hover{transform:translateY(-1px);box-shadow:var(--shadow-up)}
+.trk.late{animation:pulseRed 1.6s infinite}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.45)}50%{box-shadow:0 0 0 5px rgba(220,38,38,.12)}}
 .trk .row1{display:flex;align-items:center;gap:8px}
-.trk .plate{font-weight:800;font-size:17px;letter-spacing:.5px;flex:1}
+.trk .plate{font-weight:800;font-size:17px;letter-spacing:.5px;flex:1;font-variant-numeric:tabular-nums}
 .badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;color:#fff;white-space:nowrap}
 .bg-sched{background:var(--sched)}.bg-tiba{background:var(--tiba)}.bg-work{background:var(--work)}.bg-done{background:var(--done)}.bg-cancel{background:var(--cancel)}.bg-gray{background:#94a3b8}
-.trk .meta{color:var(--muted);font-size:13px;margin-top:5px;line-height:1.55}
+.trk .meta{color:var(--muted);font-size:13px;margin-top:5px;line-height:1.6}
 .trk .meta b{color:var(--ink)}
-.trk .timer{font-size:13px;font-weight:700;margin-top:6px;color:var(--primary)}
+.trk .meta .mic{width:13px;height:13px;vertical-align:-2px;margin-right:2px;opacity:.85}
+.trk .timer{font-size:13px;font-weight:700;margin-top:6px;color:var(--primary);display:flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums}
 .trk .timer.hot{color:var(--bad)}
 .trk .acts{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
-.trk .acts button{flex:1;padding:9px 6px;font-size:13px;min-width:100px}
+.trk .acts button{flex:1;padding:9px 6px;font-size:13px;min-width:100px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .a-blue{background:var(--tiba);color:#fff}.a-amber{background:var(--work);color:#fff}
 .a-green{background:var(--ok);color:#fff}.a-red{background:var(--bad);color:#fff}
-.a-gray{background:#e2e8f0;color:var(--ink)}
+.a-gray{background:var(--seg);color:var(--ink)}
 .empty{color:var(--muted);text-align:center;padding:30px 10px;font-size:14px}
 
-/* ---------- FORM / DASHBOARD / ADMIN ---------- */
-.panel{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px;margin-bottom:14px}
+/* ============ PANEL / FORM / DASHBOARD ============ */
+.panel{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
 .panel h2{font-size:16px;margin-bottom:4px}
 .panel p.hint{font-size:13px;color:var(--muted);margin-bottom:8px}
-.seg{display:flex;background:#e2e8f0;border-radius:9px;padding:4px;margin-bottom:6px}
+.seg{display:flex;background:var(--seg);border-radius:9px;padding:4px;margin-bottom:6px}
 .seg button{flex:1;background:none;color:var(--muted);padding:8px;border-radius:7px;font-size:14px}
-.seg button.on{background:#fff;color:var(--ink);box-shadow:var(--sh)}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
-@media(min-width:720px){.stats{grid-repeat:4;grid-template-columns:repeat(4,1fr)}}
-.stat{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:12px;text-align:center}
-.stat .v{font-size:24px;font-weight:800}
+@media(min-width:720px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:12px;text-align:center}
+.stat .v{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
 .stat .l{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
 .stat.warn .v{color:var(--warn)}.stat.bad .v{color:var(--bad)}.stat.ok .v{color:var(--ok)}
-.tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
-.tbl th{background:var(--dark2);color:#fff;text-align:left;padding:9px 10px;font-size:12px;white-space:nowrap;position:sticky;top:0}
-.tbl td{padding:8px 10px;border-top:1px solid var(--line);white-space:nowrap}
-.tbl tr:nth-child(even) td{background:#f8fafc}
-.scroll-x{overflow-x:auto;border-radius:var(--r);box-shadow:var(--sh)}
+
+/* trend chart */
+.trend{display:flex;align-items:flex-end;gap:6px;height:110px;margin-top:6px}
+.trend .bar-w{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px}
+.trend .bar-v{font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;line-height:1}
+.trend .bar{width:100%;max-width:46px;border-radius:5px 5px 0 0;background:linear-gradient(180deg,var(--primary) 0%,var(--primary-d) 100%);min-height:3px;transition:height .3s ease}
+.trend .bar-l{font-size:10px;color:var(--muted);white-space:nowrap;line-height:1}
+
+.tbl{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);border-radius:var(--r)}
+.tbl th{background:var(--dark2);color:#fff;text-align:left;padding:9px 10px;font-size:12px;white-space:nowrap;position:sticky;top:0;z-index:2}
+.tbl td{padding:8px 10px;border-top:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+.tbl tr:nth-child(even) td{background:var(--soft)}
+.scroll-x{overflow-x:auto;border-radius:var(--r);box-shadow:var(--shadow)}
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .filters input,.filters select{width:auto;min-width:130px;flex:1}
 .filters .btn.small{align-self:stretch;display:flex;align-items:center}
 .subnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.subnav button{background:#e2e8f0;color:var(--muted);padding:7px 13px;font-size:13px}
+.subnav button{background:var(--seg);color:var(--muted);padding:7px 13px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
 .subnav button.on{background:var(--primary);color:#fff}
 .list-row{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line);font-size:14px;flex-wrap:wrap}
 .list-row:last-child{border-bottom:none}
 .list-row .grow{flex:1;min-width:120px}
-.pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:#e2e8f0;color:var(--muted)}
-.pill.g{background:#dcfce7;color:var(--ok)}.pill.r{background:#fee2e2;color:var(--bad)}.pill.b{background:#dbeafe;color:var(--tiba)}
+.pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--seg);color:var(--muted)}
+.pill.g{background:var(--p-g-bg);color:var(--ok)}.pill.r{background:var(--err-bg);color:var(--bad)}.pill.b{background:var(--p-b-bg);color:var(--tiba)}
 
-/* ---------- MONITOR DESKTOP ---------- */
+/* ============ MONITOR DESKTOP ============ */
 .mon-head{display:flex;align-items:center;gap:18px;background:var(--dark);border-radius:var(--r);padding:14px 20px;color:#fff;margin-bottom:14px;flex-wrap:wrap}
 #bigClock{font-size:42px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:1px;line-height:1}
-.mon-head .dt{color:#94a3b8;font-size:14px;font-weight:600}
+.mon-head .dt{color:var(--dark-mut);font-size:14px;font-weight:600}
 .mon-head .sp{flex:1}
-.rf{font-size:12px;color:#94a3b8}
+.rf{font-size:12px;color:var(--dark-mut)}
 .kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 @media(max-width:1023px){.kanban{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.kanban{grid-template-columns:1fr}}
-.kcol{background:#e8edf3;border-radius:var(--r);padding:10px;min-height:120px}
-.kcol .kh{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;display:flex;justify-content:space-between;padding:2px 4px 8px;color:#334155}
-.kcard{background:#fff;border-radius:10px;padding:10px;margin-bottom:8px;box-shadow:var(--sh);border-left:4px solid var(--sched)}
-.kcard.c1{border-left-color:var(--tiba)}.kcard.c2{border-left-color:var(--work)}.kcard.c3{border-left-color:var(--done)}
-.kcard.late{animation:blink 1s infinite}
-.kcard .p{font-weight:800;font-size:16px}
+.kcol{background:var(--kcol);border-radius:var(--r);padding:10px;min-height:120px}
+.kcol .kh{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;display:flex;justify-content:space-between;padding:2px 4px 8px;color:var(--kh-ink)}
+.kcol .kh .ic{width:14px;height:14px;vertical-align:-2px;margin-right:4px}
+.kcard{position:relative;background:var(--card);border-radius:10px;padding:10px 10px 10px 14px;margin-bottom:8px;box-shadow:var(--shadow);overflow:hidden}
+.kcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--sched)}
+.kcard.c1::before{background:var(--tiba)}.kcard.c2::before{background:var(--work)}.kcard.c3::before{background:var(--done)}
+.kcard.late{animation:pulseRed 1.6s infinite}
+.kcard .p{font-weight:800;font-size:16px;font-variant-numeric:tabular-nums}
 .kcard .s{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kcard .t{font-size:13px;font-weight:700;color:var(--primary);margin-top:4px}
+.kcard .t{font-size:13px;font-weight:700;color:var(--primary);margin-top:4px;font-variant-numeric:tabular-nums}
 .kcard .t.hot{color:var(--bad)}
 .kcard .ops{font-size:11px;color:var(--muted);margin-top:4px}
-details.tbl-wrap{margin-top:14px;background:var(--card);border-radius:var(--r);box-shadow:var(--sh)}
-details.tbl-wrap summary{cursor:pointer;font-weight:700;padding:13px 16px;font-size:14px}
+details.tbl-wrap{margin-top:14px;background:var(--card);border-radius:var(--r);box-shadow:var(--shadow)}
+details.tbl-wrap summary{cursor:pointer;font-weight:700;padding:13px 16px;font-size:14px;display:flex;align-items:center;gap:8px}
 details.tbl-wrap .inner{padding:0 14px 14px}
 .maxh{max-height:420px;overflow:auto}
 
-/* ---------- MODAL & TOAST ---------- */
-#modalOverlay{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
-.modal{background:#fff;border-radius:16px;width:100%;max-width:420px;padding:20px;max-height:88vh;overflow-y:auto;position:relative;}
-.modal[role="dialog"]{border-radius:16px;}
+/* ============ MODAL & TOAST ============ */
+#modalOverlay{position:fixed;inset:0;background:rgba(5,10,20,.6);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .15s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--card);color:var(--ink);border-radius:16px;width:100%;max-width:420px;padding:20px;max-height:88vh;overflow-y:auto;animation:viewIn .18s ease}
 .modal h3{font-size:17px;margin-bottom:4px}
 .modal .msub{font-size:13px;color:var(--muted);margin-bottom:6px}
 .mfoot{display:flex;gap:9px;margin-top:16px}
 .mfoot button{flex:1;padding:11px}
-.modal:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
-.modal:focus-visible *{outline:none;}
 .radio-set{display:flex;flex-direction:column;gap:6px;margin-top:4px}
-.radio-set label.rdo{display:flex;gap:9px;align-items:center;font-weight:500;color:var(--ink);font-size:14px;margin:0;background:#f8fafc;border:1px solid var(--line);padding:9px 11px;border-radius:9px;cursor:pointer;position:relative;}
-.radio-set label.rdo::before{content:"";position:absolute;width:18px;height:18px;border:2px solid var(--line);border-radius:99px;left:12px;top:50%;transform:translateY(-50%);}
-.radio-set label.rdo.sel{border-color:var(--primary);background:#eff6ff;}
-.radio-set label.rdo.sel::before{border-color:var(--primary);}
+.radio-set label.rdo{display:flex;gap:9px;align-items:center;font-weight:500;color:var(--ink);font-size:14px;margin:0;background:var(--soft);border:1px solid var(--line);padding:9px 11px;border-radius:9px;cursor:pointer}
+.radio-set label.rdo.sel{border-color:var(--primary);background:var(--primary-soft)}
 .radio-set input{width:auto}
 #toastWrap{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:200;display:flex;flex-direction:column;gap:8px;width:min(92vw,420px)}
-.toast{background:var(--dark);color:#fff;padding:12px 16px;border-radius:11px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.3);display:flex;gap:10px;align-items:center;animation:pop .25s}
-.toast.err{background:var(--bad)}
-.toast.ok{background:var(--ok)}
+.toast{background:var(--dark2);color:#fff;padding:12px 16px;border-radius:11px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.3);display:flex;gap:10px;align-items:center;animation:pop .25s;border-left:4px solid var(--tiba)}
+.toast.err{background:var(--bad);border-left-color:rgba(255,255,255,.5)}
+.toast.ok{background:var(--ok);border-left-color:rgba(255,255,255,.5)}
+.toast .ic{width:17px;height:17px;flex-shrink:0}
 .toast button.retry{background:rgba(255,255,255,.2);color:#fff;padding:6px 12px;font-size:12px;flex-shrink:0}
 @keyframes pop{from{opacity:0;transform:translateY(12px)}to{opacity:1}}
+
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite}
 @keyframes rot{to{transform:rotate(360deg)}}
+
+/* skeleton */
+.skel{height:64px;border-radius:var(--r);margin-bottom:10px;background:linear-gradient(90deg,var(--soft) 25%,var(--line) 37%,var(--soft) 63%);background-size:400% 100%;animation:shimmer 1.3s infinite}
+.skel.thin{height:36px}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
 footer.cred{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);padding:8px 14px;display:flex;align-items:center;gap:10px;z-index:45}
 footer.cred .who{flex:1;font-size:13px}
 footer.cred .who b{display:block;font-size:14px}
 footer.cred .who span{color:var(--muted);font-size:12px}
 body[data-mode="monitor"] footer.cred{display:none}
+
+/* ============ RESPONSIVE <600px ============ */
+@media(max-width:599px){
+  .cols,.kanban,.stats{grid-template-columns:1fr!important}
+  .tbl th,.tbl td{font-size:12px;padding:6px 8px}
+  .col-opt{display:none}
+  .trk{padding:10px 10px 10px 15px;margin-bottom:8px}
+  .trk .plate{font-size:15px}
+  .badge{font-size:10px;padding:2px 6px}
+  .acts button{min-width:auto;padding:8px;font-size:12px}
+  .empty{padding:20px 10px;font-size:12px}
+  .kcol{padding:8px}.kcard{padding:8px 8px 8px 12px}
+  .stat .v{font-size:20px}
+  .subnav button{font-size:12px;padding:6px 10px}
+  .list-row{font-size:13px;padding:8px 2px}
+  .maxh{max-height:300px}
+  nav.tabs{top:46px}
+  header.top{padding:9px 10px}
+  header.top .ttl{font-size:14px}
+  .tbtn{padding:7px 9px}
+  .mon-head{gap:10px;padding:12px 14px}
+  #bigClock{font-size:32px}
+}
+
+/* ============ REDUCED MOTION ============ */
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
+  .trk.late,.kcard.late{animation:none;box-shadow:0 0 0 2px var(--bad)}
+  .skel{animation:none;opacity:.7}
+}
 </style>
 </head>
 <body data-mode="operasi">
 
+<!-- ============ SPRITE IKON (lucide-style, stroke currentColor) ============ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+<symbol id="i-factory" viewBox="0 0 24 24"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></symbol>
+<symbol id="i-package" viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+<symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol>
+<symbol id="i-truck" viewBox="0 0 24 24"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18h-5"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="m6 3 14 9-14 9V3z"/></symbol>
+<symbol id="i-coffee" viewBox="0 0 24 24"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/><path d="M6 2v2"/></symbol>
+<symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></symbol>
+<symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+<symbol id="i-rotate" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/></symbol>
+<symbol id="i-power" viewBox="0 0 24 24"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></symbol>
+<symbol id="i-maximize" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></symbol>
+<symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></symbol>
+<symbol id="i-clipboard" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></symbol>
+<symbol id="i-check-c" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
+<symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+<symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+</svg>
+
 <!-- ================= LOGIN ================= -->
 <div id="loginScreen">
   <form class="login-card" id="loginForm" autocomplete="off">
-    <div class="login-logo">🏭</div>
+    <div class="login-logo"><svg class="ic" aria-hidden="true"><use href="#i-factory"/></svg></div>
     <h1>Monitoring Unloading</h1>
     <p class="sub">Warehouse Manufacturing &mdash; Bongkar Muat</p>
     <details class="urlbox" id="urlBox">
@@ -238,18 +313,19 @@ body[data-mode="monitor"] footer.cred{display:none}
 <div id="appScreen" class="hide">
   <header class="top">
     <span class="dot" id="connDot"></span>
-    <span class="ttl">🏭 Monitoring Unloading</span>
-    <button class="tbtn" id="btnKey" title="Ganti sandi">🔑</button>
-    <button class="tbtn" id="btnMode" title="Ganti tampilan">🖥 Monitor</button>
-    <button class="tbtn" id="btnFs" title="Layar penuh">⛶</button>
-    <button class="tbtn" id="btnOut" title="Keluar">⏻</button>
+    <span class="ttl"><svg class="ic" aria-hidden="true"><use href="#i-factory"/></svg> Monitoring Unloading</span>
+    <button class="tbtn" id="btnTheme" title="Ganti tema" aria-label="Ganti tema terang/gelap"></button>
+    <button class="tbtn" id="btnKey" title="Ganti sandi" aria-label="Ganti sandi"><svg class="ic" aria-hidden="true"><use href="#i-key"/></svg></button>
+    <button class="tbtn" id="btnMode" title="Ganti tampilan" aria-label="Ganti tampilan monitor/operasi">Monitor</button>
+    <button class="tbtn" id="btnFs" title="Layar penuh" aria-label="Layar penuh"><svg class="ic" aria-hidden="true"><use href="#i-maximize"/></svg></button>
+    <button class="tbtn" id="btnOut" title="Keluar" aria-label="Keluar"><svg class="ic" aria-hidden="true"><use href="#i-power"/></svg></button>
   </header>
 
   <nav class="tabs" id="tabsBar">
-    <button data-tab="queue" class="on">📦 Antrean</button>
-    <button data-tab="form">➕ Input Truk</button>
-    <button data-tab="dash">📊 Dashboard</button>
-    <button data-tab="admin" id="tabAdmin">🛠 Admin</button>
+    <button data-tab="queue" class="on"><svg class="ic" aria-hidden="true"><use href="#i-package"/></svg> Antrean</button>
+    <button data-tab="form"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg> Input Truk</button>
+    <button data-tab="dash"><svg class="ic" aria-hidden="true"><use href="#i-chart"/></svg> Dashboard</button>
+    <button data-tab="admin" id="tabAdmin"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg> Admin</button>
   </nav>
 
   <main>
@@ -284,12 +360,17 @@ body[data-mode="monitor"] footer.cred{display:none}
         </div>
         <label>Keterangan</label>
         <textarea id="fCatatan" rows="2" placeholder="Opsional"></textarea>
-        <button class="btn" id="btnSubmitTruck">💾 Simpan</button>
+        <button class="btn" id="btnSubmitTruck"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg> Simpan</button>
       </div>
     </section>
 
     <section id="viewDash" class="hide">
       <div class="stats" id="dashStats"></div>
+      <div class="panel">
+        <h2>Tren 7 Hari</h2>
+        <p class="hint">Jumlah truk selesai bongkar per hari (Asia/Jakarta).</p>
+        <div class="trend" id="trendChart"></div>
+      </div>
       <div class="panel">
         <div class="filters">
           <input type="date" id="dDate">
@@ -299,7 +380,7 @@ body[data-mode="monitor"] footer.cred{display:none}
             <option>Dijadwalkan</option><option>Tiba</option>
             <option>Sedang Bongkar</option><option>Selesai</option><option>Dibatalkan</option>
           </select>
-          <button class="btn small sec" id="btnCsv">⬇ CSV</button>
+          <button class="btn small sec" id="btnCsv"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> CSV</button>
         </div>
         <div class="scroll-x maxh"><table class="tbl" id="dashTbl"></table></div>
       </div>
@@ -307,11 +388,11 @@ body[data-mode="monitor"] footer.cred{display:none}
 
     <section id="viewAdmin" class="hide">
       <div class="subnav" id="adminNav">
-        <button data-a="users" class="on">👤 Users &amp; Login</button>
-        <button data-a="operators">🔧 Operator</button>
-        <button data-a="suppliers">🏷 Supplier</button>
-        <button data-a="settings">⚙️ Settings</button>
-        <button data-a="audit">📜 Audit Log</button>
+        <button data-a="users" class="on"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg> Users</button>
+        <button data-a="operators"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg> Operator</button>
+        <button data-a="suppliers"><svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg> Supplier</button>
+        <button data-a="settings"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg> Settings</button>
+        <button data-a="audit"><svg class="ic" aria-hidden="true"><use href="#i-clipboard"/></svg> Audit Log</button>
       </div>
       <div class="panel" id="adminBody"><p class="hint">Memuat...</p></div>
     </section>
@@ -329,7 +410,7 @@ body[data-mode="monitor"] footer.cred{display:none}
       <div class="stats" id="monStats"></div>
       <div class="kanban" id="kanban"></div>
       <details class="tbl-wrap">
-        <summary>📋 Tabel Lengkap &amp; Filter</summary>
+        <summary><svg class="ic" aria-hidden="true"><use href="#i-clipboard"/></svg> Tabel Lengkap &amp; Filter</summary>
         <div class="inner">
           <div class="filters">
             <input type="date" id="mDate">
@@ -349,7 +430,7 @@ body[data-mode="monitor"] footer.cred{display:none}
 
   <footer class="cred">
     <div class="who"><b id="whoName">-</b><span id="whoRole">-</span></div>
-    <button class="btn small sec" id="btnRefreshTop">⟳ Refresh</button>
+    <button class="btn small sec" id="btnRefreshTop"><svg class="ic" aria-hidden="true"><use href="#i-rotate"/></svg> Refresh</button>
   </footer>
 </div>
 
