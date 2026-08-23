@@ -260,10 +260,14 @@ def main():
         ctx = browser.new_context(viewport={"width": 1280, "height": 860})
         pg = ctx.new_page()
         track_console(pg, "login")
-        pg.goto(base, wait_until="networkidle")
-        pg.wait_for_timeout(700)
+        resp = pg.goto(base, wait_until="domcontentloaded", timeout=20000)
+        pg.wait_for_selector("#loginScreen", timeout=15000)
         title = pg.title()
-        assert "Monitoring" in title, f"halaman salah: url={pg.url} title={title!r}"
+        head = pg.content()[:160].replace("\n", " ")
+        assert "Monitoring" in title, (
+            f"halaman salah: status={resp.status if resp else None} "
+            f"url={pg.url} title={title!r} head={head!r}"
+        )
         box = pg.locator("#loginScreen").bounding_box()
         cls = pg.get_attribute("#loginScreen", "class")
         print(f"[diag] loginScreen class={cls!r} box={box}")
@@ -274,7 +278,7 @@ def main():
 
         # --- 2. antrean mobile gelap 360 ---
         ctx = browser.new_context(viewport={"width": 360, "height": 780}, device_scale_factor=2)
-        ctx.add_init_script(seed_script(theme="dark"))
+        ctx.add_init_script(seed_script(port, theme="dark"))
         pg = ctx.new_page()
         track_console(pg, "queue360")
         pg.goto(base, wait_until="networkidle")
@@ -295,7 +299,7 @@ def main():
 
         # --- 3. operasi desktop terang: dashboard + tren ---
         ctx = browser.new_context(viewport={"width": 1280, "height": 900})
-        ctx.add_init_script(seed_script(mode="operasi", theme="light"))
+        ctx.add_init_script(seed_script(port, mode="operasi", theme="light"))
         pg = ctx.new_page()
         track_console(pg, "dash1280")
         pg.goto(base, wait_until="networkidle")
@@ -326,7 +330,7 @@ def main():
 
         # --- 5. monitor desktop gelap (auto di >=1024px) ---
         ctx = browser.new_context(viewport={"width": 1366, "height": 900})
-        ctx.add_init_script(seed_script())
+        ctx.add_init_script(seed_script(port))
         pg = ctx.new_page()
         track_console(pg, "monitor1366")
         pg.goto(base, wait_until="networkidle")
