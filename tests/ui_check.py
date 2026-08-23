@@ -182,9 +182,16 @@ def make_handler():
             pass
 
         def do_GET(self):
-            self._route({})
+            if "/exec" in self.path:
+                self._route({})
+            else:
+                super().do_GET()
 
         def do_POST(self):
+            if "/exec" not in self.path:
+                self.send_response(404)
+                self.end_headers()
+                return
             body = {}
             try:
                 ln = int(self.headers.get("Content-Length") or 0)
@@ -222,21 +229,17 @@ def start_server():
     return srv, port
 
 
-SEED = """
-(url) => {
-  localStorage.setItem('unl_url', 'http://127.0.0.1:%PORT%/exec');
-  localStorage.setItem('unl_user', 'admin');
-  localStorage.setItem('unl_pass', 'x');
-  if (%MODE%) localStorage.setItem('unl_mode', %MODE%);
-  if (%THEME%) localStorage.setItem('unl_theme', %THEME%);
-}
-"""
-
-
 def seed_script(port, mode="", theme=""):
-    s = SEED.replace("%PORT%", str(port))
-    s = s.replace("%MODE%", json.dumps(mode) if mode else "")
-    return s.replace("%THEME%", json.dumps(theme) if theme else "")
+    lines = [
+        "localStorage.setItem('unl_url','http://127.0.0.1:%d/exec')" % port,
+        "localStorage.setItem('unl_user','admin')",
+        "localStorage.setItem('unl_pass','x')",
+    ]
+    if mode:
+        lines.append("localStorage.setItem('unl_mode',%s)" % json.dumps(mode))
+    if theme:
+        lines.append("localStorage.setItem('unl_theme',%s)" % json.dumps(theme))
+    return "\n".join(lines)
 
 
 errors = []
@@ -261,12 +264,23 @@ def main():
         pg = ctx.new_page()
         track_console(pg, "login")
         resp = pg.goto(base, wait_until="domcontentloaded", timeout=20000)
-        pg.wait_for_selector("#loginScreen", timeout=15000)
+        try:
+            pg.wait_for_selector("#loginScreen", timeout=8000, state="visible")
+        except Exception:
+            diag = pg.evaluate(
+                "() => ({url:location.href,title:document.title,"
+                "ls:!!document.getElementById('loginScreen'),"
+                "lsCls:document.getElementById('loginScreen')?.className,"
+                "bodyKids:[...document.body.children].map(e=>e.id||e.tagName),"
+                "theme:document.documentElement.getAttribute('data-theme')})"
+            )
+            print("[diag-ctx1 GAGAL]", json.dumps(diag))
+            print("[diag] content head:", pg.content()[:200].replace("\n", " "))
+            raise
         title = pg.title()
-        head = pg.content()[:160].replace("\n", " ")
         assert "Monitoring" in title, (
             f"halaman salah: status={resp.status if resp else None} "
-            f"url={pg.url} title={title!r} head={head!r}"
+            f"url={pg.url} title={title!r}"
         )
         box = pg.locator("#loginScreen").bounding_box()
         cls = pg.get_attribute("#loginScreen", "class")
@@ -281,8 +295,17 @@ def main():
         ctx.add_init_script(seed_script(port, theme="dark"))
         pg = ctx.new_page()
         track_console(pg, "queue360")
-        pg.goto(base, wait_until="networkidle")
-        pg.wait_for_selector(".trk", timeout=8000)
+        pg.goto(base, wait_until="domcontentloaded")
+        try:
+            pg.wait_for_selector(".trk", timeout=8000)
+        except Exception:
+            print("[diag-ctx2] console/pageerror terkumpul:")
+            for e in errors[-15:]:
+                print("   ", e[:300])
+            print("[diag] mode:", pg.get_attribute("body", "data-mode"),
+                  "| theme:", pg.get_attribute("html", "data-theme"),
+                  "| connDot:", pg.get_attribute("#connDot", "class"))
+            raise
         pg.wait_for_timeout(600)
         n_truk = pg.locator(".trk").count()
         results.append((f"antrean mobile: {n_truk} kartu truk", n_truk >= 6))
@@ -362,7 +385,7 @@ def main():
         ok_all = False
     else:
         print("(bersih)")
-    print("\nKESELURUHAN:", "LOLOS ✅" if ok_all else "ADA MASALAH ❌")
+    print("\nKESELURUHAN:", "LOLOS" if ok_all else "ADA MASALAH")
     sys.exit(0 if ok_all else 1)
 
 
