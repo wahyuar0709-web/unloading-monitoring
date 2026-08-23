@@ -14,7 +14,6 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parent.parent
 SHOTS = ROOT / "_shots"
 SHOTS.mkdir(exist_ok=True)
-PORT = 8177
 
 JKT = timezone(timedelta(hours=7))
 
@@ -212,11 +211,15 @@ def make_handler():
 
 
 def start_server():
+    import socket
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
     socketserver.TCPServer.allow_reuse_address = True
-    srv = socketserver.ThreadingTCPServer(("127.0.0.1", PORT), make_handler())
+    srv = socketserver.ThreadingTCPServer(("127.0.0.1", port), make_handler())
     t = threading.Thread(target=srv.serve_forever, daemon=True)
     t.start()
-    return srv
+    return srv, port
 
 
 SEED = """
@@ -230,8 +233,8 @@ SEED = """
 """
 
 
-def seed_script(mode="", theme=""):
-    s = SEED.replace("%PORT%", str(PORT))
+def seed_script(port, mode="", theme=""):
+    s = SEED.replace("%PORT%", str(port))
     s = s.replace("%MODE%", json.dumps(mode) if mode else "")
     return s.replace("%THEME%", json.dumps(theme) if theme else "")
 
@@ -245,9 +248,9 @@ def track_console(page, label):
 
 
 def main():
-    srv = start_server()
+    srv, port = start_server()
     time.sleep(0.4)
-    base = f"http://127.0.0.1:{PORT}/index.html"
+    base = f"http://127.0.0.1:{port}/index.html"
     results = []
 
     with sync_playwright() as p:
@@ -258,8 +261,13 @@ def main():
         pg = ctx.new_page()
         track_console(pg, "login")
         pg.goto(base, wait_until="networkidle")
-        pg.wait_for_timeout(400)
-        assert pg.locator("#loginScreen").is_visible(), "login tidak tampil"
+        pg.wait_for_timeout(700)
+        title = pg.title()
+        assert "Monitoring" in title, f"halaman salah: url={pg.url} title={title!r}"
+        box = pg.locator("#loginScreen").bounding_box()
+        cls = pg.get_attribute("#loginScreen", "class")
+        print(f"[diag] loginScreen class={cls!r} box={box}")
+        assert pg.locator("#loginScreen").is_visible(), f"login tidak tampil (class={cls!r}, box={box})"
         results.append(("login tampil", True))
         pg.screenshot(path=str(SHOTS / "01_login.png"))
         ctx.close()
