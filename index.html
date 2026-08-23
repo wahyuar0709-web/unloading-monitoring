@@ -420,7 +420,7 @@ body[data-mode="monitor"] footer.cred{display:none}
               <option>Dijadwalkan</option><option>Tiba</option>
               <option>Sedang Bongkar</option><option>Selesai</option><option>Dibatalkan</option>
             </select>
-            <button class="btn small sec" id="btnCsvMon">⬇ CSV</button>
+            <button class="btn small sec" id="btnCsvMon"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> CSV</button>
           </div>
           <div class="scroll-x maxh"><table class="tbl" id="monTbl"></table></div>
         </div>
@@ -928,20 +928,21 @@ function applyFilters(list,f){
 }
 function rowForTable(v){
   return '<tr><td>'+fmtDT(v.tanggal_kedatangan||v._ts_iso)+'</td><td><b>'+esc(v.no_polisi||'-')+'</b></td><td>'+esc(v.vendor||'')+'</td>'+
-    '<td>'+esc(v.jenis_transaksi||'')+'</td><td>'+esc(v.sumber||'')+'</td>'+
+    '<td class="col-opt">'+esc(v.jenis_transaksi||'')+'</td><td class="col-opt">'+esc(v.sumber||'')+'</td>'+
     '<td>'+fmtHM(v.plan_tiba)+'</td><td>'+fmtHM(v.aktual_tiba)+'</td><td>'+fmtHM(v.mulai_bongkar)+'</td><td>'+fmtHM(v.selesai_bongkar)+'</td>'+
     '<td>'+(v.dock||'-')+'</td><td>'+(v.qty!=null?esc(v.qty+' '+(v.satuan||'')):'-')+'</td>'+
-    '<td>'+(v.durasi_tunggu_menit!=null?v.durasi_tunggu_menit:'-')+'</td><td>'+(v.durasi_bongkar_menit!=null?v.durasi_bongkar_menit:'-')+'</td>'+
+    '<td class="col-opt">'+(v.durasi_tunggu_menit!=null?v.durasi_tunggu_menit:'-')+'</td><td class="col-opt">'+(v.durasi_bongkar_menit!=null?v.durasi_bongkar_menit:'-')+'</td>'+
     '<td><span class="badge '+ST_CLS[v.status]+'">'+esc(v.status)+'</span></td>'+
-    '<td>'+esc(v.operator_tiba||'-')+'</td><td>'+esc(v.operator_bongkar||'-')+'</td>'+
+    '<td class="col-opt">'+esc(v.operator_tiba||'-')+'</td><td class="col-opt">'+esc(v.operator_bongkar||'-')+'</td>'+
     '<td>'+esc(v.temuan||'')+'</td></tr>';
 }
-var TABLE_HEAD='<thead><tr><th>Tanggal</th><th>No. Polisi</th><th>Supplier</th><th>Jenis</th><th>Sumber</th><th>Plan</th><th>Tiba</th><th>Mulai</th><th>Selesai</th><th>Dock</th><th>Qty</th><th>Tunggu(m)</th><th>Bongkar(m)</th><th>Status</th><th>Op Tiba</th><th>Op Bongkar</th><th>Temuan</th></tr></thead>';
+var TABLE_HEAD='<thead><tr><th>Tanggal</th><th>No. Polisi</th><th>Supplier</th><th class="col-opt">Jenis</th><th class="col-opt">Sumber</th><th>Plan</th><th>Tiba</th><th>Mulai</th><th>Selesai</th><th>Dock</th><th>Qty</th><th class="col-opt">Tunggu(m)</th><th class="col-opt">Bongkar(m)</th><th>Status</th><th class="col-opt">Op Tiba</th><th class="col-opt">Op Bongkar</th><th>Temuan</th></tr></thead>';
 function tableHtml(list){
   if(!list.length)return TABLE_HEAD+'<tbody><tr><td colspan="17" style="text-align:center;color:var(--muted);padding:20px">Tidak ada data</td></tr></tbody>';
   return TABLE_HEAD+'<tbody>'+list.map(rowForTable).join('')+'</tbody>';
 }
 function renderDash(){
+  renderTrend(S.visits);
   var f=S.fDash=readFilters('dDate','dVendor','dStatus');
   var isDefault=(!f.date||f.date===todayJak())&&!f.vendor&&!f.status;
   var list=isDefault?todayVisits():applyFilters(S.visits,f);
@@ -950,6 +951,35 @@ function renderDash(){
   if(!isDefault)cards[0].l='Total Truk Terfilter';
   $('dashStats').innerHTML=statsHtml(cards);
   $('dashTbl').innerHTML=tableHtml(list.slice().sort(byCreated));
+}
+function renderTrend(src){
+  var el=$('trendChart'); if(!el)return;
+  var days=[],i,ms,d;
+  var DOW=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  for(i=6;i>=0;i--){
+    ms=nowMs()-i*86400000; d=new Date(ms+7*3600000);
+    days.push({k:ymdJak(ms), l:DOW[d.getUTCDay()]+' '+d.getUTCDate()+'/'+(d.getUTCMonth()+1)});
+  }
+  var cnt={},sum={},n={};
+  days.forEach(function(x){cnt[x.k]=0;});
+  src.forEach(function(v){
+    if(v.status!=='Selesai')return;
+    var base=v.selesai_bongkar||v.tanggal_kedatangan||v._ts_iso;
+    if(!base)return;
+    var t=Date.parse(base); if(isNaN(t))return;
+    var k=ymdJak(t);
+    if(!(k in cnt))return;
+    cnt[k]++;
+    if(v.durasi_bongkar_menit!=null){sum[k]=(sum[k]||0)+v.durasi_bongkar_menit;n[k]=(n[k]||0)+1;}
+  });
+  var max=1; days.forEach(function(x){ if(cnt[x.k]>max)max=cnt[x.k]; });
+  el.innerHTML=days.map(function(x){
+    var c=cnt[x.k], avg=n[x.k]?Math.round(sum[x.k]/n[x.k]):null;
+    return '<div class="bar-w" title="'+x.l+': '+c+' truk selesai'+(avg?' &middot; rata-rata bongkar '+durStr(avg):'')+'">'+
+      '<span class="bar-v">'+c+'</span>'+
+      '<div class="bar" style="height:'+Math.max(3,Math.round(c/max*100))+'%"></div>'+
+      '<span class="bar-l">'+x.l+'</span></div>';
+  }).join('');
 }
 function readFilters(dId,vId,sId){
   return {date:$(dId).value.trim(),vendor:$(vId).value.trim(),status:$(sId).value};
@@ -1026,7 +1056,7 @@ async function submitTruck(){
       await apiPost('createWalkin',payload);
     }
     ['fPol','fSupir','fSJ','fCatatan'].forEach(function(id){$(id).value='';});
-    toast('Truk tersimpan ✅','ok');
+    toast('Truk tersimpan','ok');
     S.tab='queue';renderAll();
     await refreshData(true);
   }catch(e){
@@ -1101,7 +1131,7 @@ async function renderOperators(body){
     var j=await apiGet('operatorsAll',{});
     list=j.data||[];
   }catch(e){ body.innerHTML='<p class="hint">Gagal memuat operator: '+esc(e.message)+'</p>'; return; }
-  var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h2>Operator Forklift</h2><button class="btn small" id="btnAddOp">➕ Tambah</button></div>';
+  var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h2>Operator Forklift</h2><button class="btn small" id="btnAddOp">'+ic('plus')+' Tambah</button></div>';
   list.forEach(function(o){
     var nm=typeof o==='string'?o:o.nama_operator;
     var aktif=typeof o==='string'?true:!!o.aktif;
@@ -1229,7 +1259,7 @@ function bindStatic(){
     openModal('Ganti Password',S.me?S.me.nama:'',
       '<label>Password lama</label><input id="cpOld" type="password">'+
       '<label>Password baru (min 6)</label><input id="cpNew" type="password">',null,
-      [{label:'🔑 Ganti',cls:'',onClick:async function(){
+      [{label:ic('key')+' Ganti',cls:'',onClick:async function(){
         try{await apiPost('changePassword',{old_password:$('cpOld').value,new_password:$('cpNew').value});
           closeModal();toast('Password diganti. Silakan logout & login ulang.','ok');}
         catch(e){toast(e.message,'err');}

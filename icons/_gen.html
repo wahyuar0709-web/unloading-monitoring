@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden}</style></head>
+<body>
+<svg id="art" viewBox="0 0 512 512" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+  <rect width="512" height="512" fill="#0f172a"/>
+  <g transform="translate(86,86) scale(14.17)" fill="none" stroke="#4f8ef7"
+     stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+    <path d="M7 18h1"/><path d="M12 18h1"/><path d="M17 18h1"/>
+  </g>
+</svg>
+<script>
+if (location.hash === '#maskable') {
+  var svg = document.getElementById('art');
+  svg.innerHTML = '<rect width="512" height="512" fill="#0f172a"/>' +
+    '<g transform="translate(133,133) scale(10.2)" fill="none" stroke="#4f8ef7" ' +
+    'stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>' +
+    '<path d="M7 18h1"/><path d="M12 18h1"/><path d="M17 18h1"/></g>';
+}
+</script>
+</body>
+</html>
