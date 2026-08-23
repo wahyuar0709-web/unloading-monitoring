@@ -105,8 +105,6 @@ def run_scenario(browser, name, width, height, mode="", theme="", dsf=1):
     bad_c = [c for c in a["contrast"] if c["ratio"] is not None and c["ratio"] < 3.0]
     check(f"[{tag}] kontras sample >=3.0", not bad_c, str(bad_c))
 
-    if ".kanban" in pg.evaluate("() => document.body.innerHTML.includes('kanban') ? 'y' : 'n'" or ""):
-        pass
     if a.get("kanban"):
         kb = a["kanban"]
         if width >= 1024:
