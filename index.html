@@ -859,7 +859,7 @@ function modalSelesai(v){
         l.classList.add('sel');
       });
     },
-    [{label:'🏁 Konfirmasi Selesai',cls:'',onClick:function(){
+    [{label:ic('flag')+' Konfirmasi Selesai',cls:'',onClick:function(){
         var q=Number($('mQty').value);
         if(!q||q<=0){toast('QTY wajib diisi angka > 0','err');return;}
         var t=document.querySelector('input[name="mTemuan"]:checked');
@@ -875,7 +875,7 @@ function modalEdit(v){
     '<label>No. Surat Jalan</label><input id="eSJ" value="">'+
     '<label>Catatan koreksi</label><input id="eCat" placeholder="Alasan perubahan (masuk audit log)">',
     null,
-    [{label:'💾 Simpan Koreksi',cls:'',onClick:function(){
+    [{label:ic('save')+' Simpan Koreksi',cls:'',onClick:function(){
         var pay={kode_kedatangan:v.kode_kedatangan};
         if($('eVend').value&&$('eVend').value!==v.vendor)pay.supplier=$('eVend').value;
         if($('ePol').value&&$('ePol').value.toUpperCase()!==String(v.no_polisi||'').toUpperCase())pay.no_polisi=$('ePol').value.toUpperCase();
