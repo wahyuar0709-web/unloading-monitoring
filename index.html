@@ -825,7 +825,10 @@ async function actTruk(act,id,extra){
     toast(e.message,'err',function(){actTruk(act,id,extra);});
   }finally{S.busy=false;}
 }
-function findVisit(id){ return S.visits.filter(function(v){return v.kode_kedatangan===id;})[0]; }
+function findVisit(id){ 
+  var v=S.visits.filter(function(v){return v.kode_kedatangan===id;})[0]; 
+  return v ? v : null; 
+}
 
 function modalMulai(v){
   var occupied={};
@@ -1277,6 +1280,7 @@ function bindStatic(){
     var b=ev.target.closest('[data-act]'); if(!b)return;
     var id=b.getAttribute('data-id'),act=b.getAttribute('data-act');
     var v=findVisit(id);
+    if(!v){toast('Data antrean tidak ditemukan','err');return;}
     if(act==='tiba')confirmDialog('Konfirmasi truk '+v.no_polisi+' sudah tiba?',function(){actTruk('markTiba',id,{operator_tiba:S.me.nama});});
     else if(act==='mulai')modalMulai(v);
     else if(act==='selesai')modalSelesai(v);
