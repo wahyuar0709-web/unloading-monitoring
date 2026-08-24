@@ -42,6 +42,22 @@ export function clearCreds(): void {
   Object.values(LS).forEach((k) => localStorage.removeItem(k));
 }
 
+const ERROR_CATEGORIES = {
+  NETWORK: "network",
+  AUTH: "auth",
+  SERVER: "server",
+  VALIDATION: "validation",
+  UNKNOWN: "unknown",
+};
+
+export function errorCategory(message: string): keyof typeof ERROR_CATEGORIES {
+  const lower = (message || "").toLowerCase();
+  if (/auth|login|credent/.test(lower)) return "AUTH";
+  if (/network|connection|fetch|timeout/.test(lower)) return "NETWORK";
+  if (/server|error|invalid/.test(lower)) return "SERVER";
+  return "UNKNOWN";
+}
+
 function baseUrl(raw: string): string {
   return raw.trim().replace(/\/+$/, "");
 }
@@ -58,7 +74,11 @@ export async function apiLogin(
     body: JSON.stringify({ action: "login", username: user, password: pass }),
   });
   const j = await res.json();
-  if (!j.ok) throw new Error(j.error || "Login gagal");
+  if (!j.ok) {
+    throw new Error(
+      `${errorCategory(j.error || "unknown")}: ${j.error || "Login gagal"}`
+    );
+  }
   return j.data as Me;
 }
 
@@ -78,10 +98,12 @@ export async function fetchAudit(
   try {
     res = await fetch(baseUrl(creds.url) + q, { redirect: "follow" });
   } catch {
-    throw new Error("Gagal terhubung ke Web App. Periksa URL / koneksi.");
+    throw new Error(
+      `${ERROR_CATEGORIES.NETWORK}: Gagal terhubung ke Web App. Periksa URL / koneksi.`
+    );
   }
   const j = await res.json();
-  if (!j.ok) throw new Error(j.error || "Kesalahan server");
+  if (!j.ok) throw new Error(`${errorCategory(j.error || "unknown")}: ${j.error || "Kesalahan server"}`);
   const rows = (j.data || []) as AuditEntry[];
   return rows.map((r) => ({
     timestamp: r.timestamp || "",

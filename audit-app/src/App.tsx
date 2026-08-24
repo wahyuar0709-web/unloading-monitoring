@@ -50,6 +50,7 @@ import {
   type Creds,
   type Me,
   type Tone,
+  errorCategory,
 } from "@/lib/audit";
 
 const BAR_CLASS: Record<Tone, string> = {
@@ -78,19 +79,54 @@ function LoginScreen({
   const [pass, setPass] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [testResult, setTestResult] = useState<
+    | { status: "success"; message: string }
+    | { status: "error"; message: string }
+  | null>(null);
 
-  async function handle(e: React.FormEvent) {
-    e.preventDefault();
-    setErr("");
-    if (!url.trim() || !user.trim() || !pass.trim()) {
-      setErr("URL Web App, username, dan password wajib diisi.");
+  const isValidGoogleAppsScriptUrl = (u: string): boolean => {
+    try {
+      const parsed = new URL(u);
+      return parsed.hostname.includes("script.google.com") && parsed.pathname.includes("/macros/");
+    } catch {
+      return false;
+    }
+  };
+
+  async function testConnection(url: string) {
+    setTestResult(null);
+    if (!url.trim()) {
+      setTestResult({ status: "error", message: "URL wajib diisi." });
+      return;
+    }
+    if (!isValidGoogleAppsScriptUrl(url)) {
+      setTestResult({
+        status: "error",
+        message: "URL harus berupa Google Apps Script (.exec URL)",
+      });
       return;
     }
     setBusy(true);
     try {
-      await onSubmit(url, user, pass);
-    } catch (e2) {
-      setErr(String((e2 as Error).message || "Login gagal").replace("AUTH: ", ""));
+      const res = await fetch(baseUrl(url), {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "test" }),
+      });
+      const j = await res.json();
+      if (j.ok) {
+        setTestResult({ status: "success", message: j.message || "Koneksi OK" });
+      } else {
+        setTestResult({
+          status: "error",
+          message: j.error || "Koneksi gagal",
+        });
+      }
+    } catch (e) {
+      setTestResult({
+        status: "error",
+        message: errorCategory(String((e as Error).message)) || "unknown",
+      });
     } finally {
       setBusy(false);
     }
