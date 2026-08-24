@@ -342,8 +342,8 @@ body[data-mode="monitor"] footer.cred{display:none}
         </div>
         <label>Supplier <span style="color:var(--bad)">*</span> <span class="helper">Wajib diisi</span></label>
         <select id="fVendor" required aria-label="Supplier"></select>
-        <label>No. Polisi <span style="color:var(--bad)">*</span> <span class="helper">Format: B 1234 XYZ</span></label>
-        <input id="fPol" placeholder="B 1234 XYZ" style="text-transform:uppercase" required aria-label="Nomor polisi kendaraan" pattern="[A-Z0-9\s]{3,}" title="Hanya huruf, angka, dan spasi minimal 3 karakter">
+        <label>No. Polisi <span class="helper">Opsional &middot; Format: B 1234 XYZ</span></label>
+        <input id="fPol" placeholder="B 1234 XYZ (opsional)" style="text-transform:uppercase" aria-label="Nomor polisi kendaraan" pattern="[A-Z0-9\s]{3,}" title="Jika diisi: huruf, angka, dan spasi minimal 3 karakter">
         <label>Nama Supir <span class="helper">(opsional)</span></label>
         <input id="fSupir" placeholder="Opsional" aria-label="Nama supir">
         <label>No. Surat Jalan / PO</label>
@@ -882,7 +882,7 @@ function modalEdit(v){
     [{label:ic('save')+' Simpan Koreksi',cls:'',onClick:function(){
         var pay={kode_kedatangan:v.kode_kedatangan};
         if($('eVend').value&&$('eVend').value!==v.vendor)pay.supplier=$('eVend').value;
-        if($('ePol').value&&$('ePol').value.toUpperCase()!==String(v.no_polisi||'').toUpperCase())pay.no_polisi=$('ePol').value.toUpperCase();
+        if($('ePol').value.toUpperCase()!==String(v.no_polisi||'').toUpperCase())pay.no_polisi=$('ePol').value.toUpperCase();
         if($('eSupir').value!==String(v.nama_supir||''))pay.nama_supir=$('eSupir').value;
         if($('eSJ').value!==String(v.no_surat_jalan||''))pay.no_surat_jalan=$('eSJ').value;
         if($('eCat').value)pay.catatan=$('eCat').value;
@@ -1027,10 +1027,9 @@ function validateTruckForm(){
   var pol=$('fPol').value.trim().toUpperCase();
   // Validasi supplier
   if(!vendor){$('fVendor').focus();toast('Pilih supplier dulu','err');return false;}
-  // Validasi no polisi (format: B 1234 XYZ atau similar: huruf/angka/spasi, minimal 3 char)
+  // Validasi no polisi (opsional). Jika diisi: huruf/angka/spasi, minimal 3 char.
   var platePattern = /^[A-Z0-9\s]{3,}$/;
-  if(!pol){$('fPol').focus();toast('No. polisi wajib diisi','err');return false;}
-  if(!platePattern.test(pol)){$('fPol').focus();toast('Format no. polisi tidak valid','err');return false;}
+  if(pol && !platePattern.test(pol)){$('fPol').focus();toast('Format no. polisi tidak valid','err');return false;}
   // Validasi nama supir (opsional tapi jika diisi harus huruf/ruang)
   var supir=$('fSupir').value.trim();
   if(supir && !/^[A-Za-z\s]+$/.test(supir)){$('fSupir').focus();toast('Format nama supir tidak valid','err');return false;}
