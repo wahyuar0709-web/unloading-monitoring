@@ -867,7 +867,8 @@ function modalSelesai(v){
         if(!q||q<=0){toast('QTY wajib diisi angka > 0','err');return;}
         var t=document.querySelector('input[name="mTemuan"]:checked');
         if(!t){toast('Pilih temuan abnormal','err');return;}
-        closeModal(); actTruk('markSelesaiBongkar',v.kode_kedatangan,{qty:q,satuan:$('mSat').value,temuan:t.value,keterangan:$('mKat').value});
+        var sat=$('mSat').value, ket=$('mKat').value;
+        closeModal(); actTruk('markSelesaiBongkar',v.kode_kedatangan,{qty:q,satuan:sat,temuan:t.value,keterangan:ket});
       }},{label:'Batal',cls:'sec'}]);
 }
 function modalEdit(v){
@@ -875,7 +876,7 @@ function modalEdit(v){
     '<label>Supplier</label><input id="eVend" value="'+esc(v.vendor)+'" list="dlSup"><datalist id="dlSup">'+S.suppliers.map(function(s){return '<option>'+esc(s);}).join('')+'</datalist>'+
     '<label>No. Polisi</label><input id="ePol" value="'+esc(v.no_polisi)+'" style="text-transform:uppercase">'+
     '<label>Nama Supir</label><input id="eSupir" value="'+esc(v.nama_supir||'')+'">'+
-    '<label>No. Surat Jalan</label><input id="eSJ" value="">'+
+    '<label>No. Surat Jalan</label><input id="eSJ" value="'+esc(v.no_surat_jalan||'')+'">'+
     '<label>Catatan koreksi</label><input id="eCat" placeholder="Alasan perubahan (masuk audit log)">',
     null,
     [{label:ic('save')+' Simpan Koreksi',cls:'',onClick:function(){
@@ -883,7 +884,7 @@ function modalEdit(v){
         if($('eVend').value&&$('eVend').value!==v.vendor)pay.supplier=$('eVend').value;
         if($('ePol').value&&$('ePol').value.toUpperCase()!==String(v.no_polisi||'').toUpperCase())pay.no_polisi=$('ePol').value.toUpperCase();
         if($('eSupir').value!==String(v.nama_supir||''))pay.nama_supir=$('eSupir').value;
-        if($('eSJ').value)pay.no_surat_jalan=$('eSJ').value;
+        if($('eSJ').value!==String(v.no_surat_jalan||''))pay.no_surat_jalan=$('eSJ').value;
         if($('eCat').value)pay.catatan=$('eCat').value;
         if(Object.keys(pay).length<2){toast('Tidak ada perubahan','err');return;}
         closeModal(); actTruk('editVisit',v.kode_kedatangan,pay);
