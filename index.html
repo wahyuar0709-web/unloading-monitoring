@@ -150,12 +150,14 @@ section[id^="view"]:not(.hide){animation:viewIn .22s var(--ease)}
 @keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* ============ QUEUE CARDS ============ */
-.cols{display:grid;grid-template-columns:1fr;gap:14px}
-@media(min-width:900px){.cols{grid-template-columns:repeat(4,1fr)}}
+.cols{display:flex;flex-direction:column;gap:20px}
+.qsec .col-h{margin-bottom:1px}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}
+.qgrid .empty{grid-column:1/-1}
 .col-h{display:flex;align-items:center;gap:7px;font-weight:800;font-size:12.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:4px 4px 9px}
 .col-h .ic{width:15px;height:15px}
 .col-h .n{background:var(--seg);color:var(--muted);border-radius:99px;padding:1px 8px;font-size:12px;font-variant-numeric:tabular-nums;font-weight:700}
-.trk{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 14px 14px 19px;margin-bottom:11px;overflow:hidden;transition:transform .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease)}
+.trk{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 14px 14px 19px;margin-bottom:0;overflow:hidden;transition:transform .2s var(--ease),box-shadow .2s var(--ease),border-color .2s var(--ease)}
 .trk::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--sched);border-radius:0 3px 3px 0}
 .trk.st-Tiba::before{background:linear-gradient(180deg,var(--tiba),color-mix(in srgb, var(--tiba) 60%, #000))}
 .trk.st-SedangBongkar::before{background:linear-gradient(180deg,var(--work),color-mix(in srgb, var(--work) 60%, #000))}
@@ -166,7 +168,8 @@ section[id^="view"]:not(.hide){animation:viewIn .22s var(--ease)}
 .trk.late{animation:pulseRed 1.6s infinite}
 @keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.45)}50%{box-shadow:0 0 0 5px rgba(220,38,38,.12)}}
 .trk .row1{display:flex;align-items:center;gap:8px}
-.trk .plate{font-weight:800;font-size:17.5px;letter-spacing:.3px;flex:1;font-variant-numeric:tabular-nums;font-family:var(--font-h)}
+.trk .plate{font-weight:800;font-size:17.5px;letter-spacing:.3px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;font-family:var(--font-h)}
+.trk .row1{flex-wrap:wrap;row-gap:6px}
 .badge{font-size:11px;font-weight:700;padding:4.5px 10px;border-radius:99px;color:#fff;white-space:nowrap;letter-spacing:.15px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 2px 6px rgba(0,0,0,.1)}
 .bg-sched{background:linear-gradient(135deg,var(--sched),color-mix(in srgb, var(--sched) 70%, #000))}
 .bg-tiba{background:linear-gradient(135deg,var(--tiba),color-mix(in srgb, var(--tiba) 75%, #000))}
@@ -302,10 +305,11 @@ body[data-mode="monitor"] footer.cred{display:none}
 
 /* ============ RESPONSIVE <600px ============ */
 @media(max-width:599px){
-  .cols,.kanban,.stats{grid-template-columns:1fr!important}
+  .kanban,.stats{grid-template-columns:1fr!important}
+  .qgrid{grid-template-columns:1fr!important}
   .tbl th,.tbl td{font-size:12px;padding:6px 8px}
   .col-opt{display:none}
-  .trk{padding:11px 11px 11px 16px;margin-bottom:9px}
+  .trk{padding:11px 11px 11px 16px;margin-bottom:0}
   .trk .plate{font-size:15px}
   .badge{font-size:10px;padding:2px 6px}
   .acts button{min-width:auto;padding:8px;font-size:12px}
@@ -651,7 +655,7 @@ function openModal(title,sub,bodyHtml,onMount,actions){
   var foot=$('mFoot');
   (actions||[{label:'Tutup',cls:'sec'}]).forEach(function(a){
     var b=document.createElement('button');
-    b.className='btn '+(a.cls||'sec'); b.style.marginTop='0'; b.textContent=a.label;
+    b.className='btn '+(a.cls||'sec'); b.style.marginTop='0'; b.innerHTML=a.label;
     b.onclick=function(){ if(a.onClick){ a.onClick(box); } else closeModal(); };
     foot.appendChild(b);
   });
@@ -892,7 +896,7 @@ function cardHtml(v){
 function renderQueue(){
   if(S.firstLoad&&!S.visits.length){
     var sk=''; for(var q=0;q<3;q++)sk+='<div class="skel"></div>';
-    var colHtml=''; for(var c2=0;c2<4;c2++)colHtml+='<div><div class="col-h">'+ic('clock')+' &nbsp;</div>'+sk+'</div>';
+    var colHtml=''; for(var c2=0;c2<4;c2++)colHtml+='<div class="qsec"><div class="col-h">'+ic('clock')+' &nbsp;</div><div class="qgrid">'+sk+'</div></div>';
     $('queueCols').innerHTML=colHtml;
     return;
   }
@@ -904,11 +908,11 @@ function renderQueue(){
   var html=cols.map(function(c){
     var arr=tv.filter(function(v){return v.status===c.t;})
       .sort(function(a,b){return (a.dock||99)-(b.dock||99)||String(a.aktual_tiba||a.plan_tiba||'').localeCompare(String(b.aktual_tiba||b.plan_tiba||''));});
-    return '<div><div class="col-h">'+ic(c.ico)+' '+c.t+' <span class="n">'+arr.length+'</span></div>'+
-      (arr.map(cardHtml).join('')||'<div class="empty">Kosong</div>')+'</div>';
+    return '<div class="qsec"><div class="col-h">'+ic(c.ico)+' '+c.t+' <span class="n">'+arr.length+'</span></div>'+
+      '<div class="qgrid">'+(arr.map(cardHtml).join('')||'<div class="empty">Kosong</div>')+'</div></div>';
   }).join('');
   var canc=tv.filter(function(v){return v.status==='Dibatalkan';});
-  if(canc.length)html+='<div style="grid-column:1/-1"><div class="col-h">'+ic('ban')+' Dibatalkan <span class="n">'+canc.length+'</span></div>'+canc.map(cardHtml).join('')+'</div>';
+  if(canc.length)html+='<div class="qsec"><div class="col-h">'+ic('ban')+' Dibatalkan <span class="n">'+canc.length+'</span></div><div class="qgrid">'+canc.map(cardHtml).join('')+'</div></div>';
   $('queueCols').innerHTML=html;
 }
 
