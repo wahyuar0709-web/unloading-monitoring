@@ -132,6 +132,24 @@ function LoginScreen({
     }
   }
 
+  async function handle(e: React.FormEvent) {
+    e.preventDefault();
+    setErr("");
+    if (!url.trim() || !user.trim() || !pass.trim()) {
+      setErr("URL Web App, username, dan password wajib diisi.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await onSubmit(url, user, pass);
+    } catch (e2) {
+      const cat = errorCategory(String((e2 as Error).message));
+      setErr(`${cat}: ${(e2 as Error).message || "Login gagal"}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4"
@@ -161,8 +179,26 @@ function LoginScreen({
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://script.google.com/macros/s/....../exec"
             />
+            <button
+              className="ml-2 text-sm text-blue-600 hover:underline"
+              onClick={() => testConnection(url)}
+            >
+              Test
+            </button>
           </div>
         </details>
+
+        {testResult && (
+          <div
+            className={
+              testResult.status === "success"
+                ? "mt-2 rounded-md border border-green-500 bg-green-50 px-3 py-2 text-sm text-green-700"
+                : "mt-2 rounded-md border border-red-500 bg-red-50 px-3 py-2 text-sm text-red-700"
+            }
+          >
+            {testResult.message}
+          </div>
+        )}
 
         <div className="space-y-3">
           <div className="space-y-1.5">
