@@ -158,6 +158,8 @@ section[id^="view"]:not(.hide){animation:viewIn .22s var(--ease)}
 
 /* ============ QUEUE CARDS ============ */
 .cols{display:flex;flex-direction:column;gap:20px}
+.qsec{position:relative}
+.qsec+.qsec{border-top:1px solid var(--line);padding-top:16px}
 .qsec .col-h{margin-bottom:1px}
 .qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}
 .qgrid .empty{grid-column:1/-1}
@@ -711,8 +713,8 @@ details.tbl-wrap .inner{padding:0 15px 15px}
 <script>
 'use strict';
 /* ================= KONFIG & STATE ================= */
-var APP_VERSION='2.2.3';
-var APP_BUILD_NOTE='UX P2 · mobile cards · filter reset · responsive operator flow · fix stats dobel saat pindah Mode Monitor · skala kartu statistik desktop · logo mark SVG + favicon · empty-state berilustrasi · fix Mode Monitor dipaksa gelap';
+var APP_VERSION='2.2.4';
+var APP_BUILD_NOTE='fix bootstrap 404 via POST · fix empty-state HTML ter-escape · pemisah antar-section antrean';
 console.log('Monitoring Unloading v'+APP_VERSION+' — '+APP_BUILD_NOTE);
 var LS = { URL:'unl_url', USER:'unl_user', MODE:'unl_mode', SESS:'unl_sess' };
 var SATUAN_OPTS = ['Pallet','Palet','Bags','box','Dus','Drum','pcs','tanki','Pail','Roll','Unit','Lainnya'];
@@ -1147,7 +1149,12 @@ function fillVendorSelects(){
    render sebelumnya; sisanya dipindah apa adanya - memperluas pola yang sudah dipakai
    tickRunning() (update angka durasi tanpa render ulang kartu) ke seluruh siklus render. */
 function emptyHtml(msg){
-  return '<div class="empty">'+ic('package')+'<span>'+esc(msg)+'</span></div>';
+  // msg berisi markup tetap (<b>judul</b><span>keterangan</span>) yang didefinisikan
+  // di kode sendiri (lihat c.empty), bukan input pengguna - jadi TIDAK di-esc() di sini
+  // (kalau di-esc, tag <b>/<span> ikut ter-escape dan tampil sebagai teks mentah).
+  // Untuk pesan sederhana tanpa tag (mis. 'Kosong'), bungkus otomatis dengan <span>.
+  var body = /^<b>/.test(msg) ? msg : '<span>'+esc(msg)+'</span>';
+  return '<div class="empty">'+ic('package')+body+'</div>';
 }
 function patchList(container, items, keyFn, sigFn, renderFn){
   var existing={};
