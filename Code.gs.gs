@@ -34,6 +34,38 @@ var SHEET_NAMES = {
   AUDIT: 'AuditLog'
 };
 
+// ===================== TELEGRAM CONFIG =====================
+var BOT_TOKEN = ''; // Isi via PropertiesService atau sheet Settings
+var ADMIN_CHAT_IDS = []; // Daftar chat ID admin, dipisah koma di sheet Settings
+
+function initTelegramConfig_() {
+  var props = PropertiesService.getScriptProperties();
+  var storedToken = props.getProperty('TELEGRAM_BOT_TOKEN');
+  if (storedToken) {
+    BOT_TOKEN = storedToken;
+  } else {
+    // Fallback: baca dari sheet Settings
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(SHEET_NAMES.SETTINGS);
+    if (sheet) {
+      var val = sheet.getRange('B2').getValue(); // key: telegram_bot_token
+      if (val) {
+        BOT_TOKEN = val;
+        props.setProperty('TELEGRAM_BOT_TOKEN', val);
+      }
+    }
+  }
+
+  // Baca chat ID admin dari sheet Settings
+  var adminsVal = '';
+  if (sheet) {
+    adminsVal = sheet.getRange('B3').getValue(); // key: telegram_admins
+  }
+  if (adminsVal) {
+    ADMIN_CHAT_IDS = adminsVal.split(',').map(s => s.trim()).filter(s => s);
+  }
+}
+
 // Kolom tambahan aplikasi. Ditambahkan di ujung kanan jika belum ada -
 // kolom lama (A-S) tidak disentuh sama sekali.
 var VISITS_NEW_HEADERS = [
@@ -333,6 +365,8 @@ function saveIdempotentResult_(action, requestId, result) {
 
 function setupAll() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  initTelegramConfig_();
 
   migrateDataUnloadingSheet_(ss);
   setupSettingsSheet_(ss);
@@ -833,6 +867,10 @@ function doPost(e) {
       // ---- semua role yang login ----
       case 'changePassword':
         result = changePassword_(data, user);
+        break;
+      case 'telegram':
+        requireRole_(user, [ROLES.ADMIN]);
+        result = telegramInput_(data, user);
         break;
 
       default:
@@ -1679,6 +1717,77 @@ function updateSetting_(data, byUser) {
   }
 }
 
+// ===================== CEK DELAY TELEGRAM =====================
+
+/**
+ * Cek setiap 5 menit untuk truk yang menunggu melewati batas telat parah.
+ * Dijalankan via trigger time-driven di Apps Script.
+ */
+function checkDelayAlerts_() {
+  var sheet = getVisitsSheet_();
+  var map = getHeaderMap_(sheet);
+  var idCol = map['Unload_ID'];
+  var dockCol = map['Dock'];
+  var statusCol = map['Status Kerja'];
+  var tMulaiCol = map['Jam Mulai Bongkar'];
+  var tDatangCol = map['Jam Kedatangan'];
+  var operatorCol = map['Operator Bongkar'];
+
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+
+  var tz = Session.getScriptTimeZone();
+  var now = new Date();
+  var BATAS_TELAT_PARAH = 60; // menit
+
+  var values = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
+
+  for (var i = 0; i < values.length; i++) {
+    var row = values[i];
+    var rowIndex = i + 2;
+
+    if (!row[idCol - 1] || String(row[statusCol - 1]) !== STATUS.SEDANG_BONGKAR) continue;
+
+    var tMulai = toDateSafe_(row[tMulaiCol - 1]);
+    var tDatang = toDateSafe_(row[tDatangCol - 1]);
+
+    if (!tMulai || !tDatang) continue;
+
+    // Hitung durasi menunggu dari tDatang sampai now
+    var durMenit = Math.round((now - tDatang) / 60000);
+
+    // Jika sudah melewati batas parah
+    if (durMenit >= BATAS_TELAT_PARAH) {
+      var noPolisi = row[map['No. Polisi'] - 1] || '-';
+      var operator = row[operatorCol - 1] || '-';
+      var unloadId = row[idCol - 1] || '-';
+
+      // Kirim alert ke semua admin
+      var alertText = '⚠️ *ALERT TRUK TELAT*\\n' +
+        'Truk: *' + noPolisi + '*\\n' +
+        'ID: ' + unloadId + '\\n' +
+        'Menunggu: *' + durMenit + '* menit\\n' +
+        'Operator: ' + operator + '\\n' +
+        'Waktu mulai: ' + Utilities.formatDate(tMulai, tz, 'HH:mm') +
+        '. Sudah melewati batas *60 menit*';
+
+      sendToAllAdmins_(alertText, 'Markdown');
+
+      // Log alert
+      logAudit_(null, 'TELEGRAM_DELAY_ALERT', unloadId, 'Truk ' + noPolisi + ' menunggu ' + durMenit + ' menit');
+    }
+  }
+}
+
+/**
+ * Konversi nilai ke Date safely.
+ */
+function toDateSafe_(val) {
+  if (!val) return null;
+  if (val instanceof Date) return val;
+  return new Date(val);
+}
+
 // ===================== HELPERS VALIDASI =====================
 
 function requireFields_(data, fields) {
@@ -1708,4 +1817,108 @@ function respondJson_(obj) {
 function respondError_(message) {
   return ContentService.createTextOutput(JSON.stringify({ ok: false, error: message }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ===================== TELEGRAM FUNCTIONS =====================
+
+function initTelegramConfig_() {
+  var props = PropertiesService.getScriptProperties();
+  var storedToken = props.getProperty('TELEGRAM_BOT_TOKEN');
+  if (storedToken) {
+    BOT_TOKEN = storedToken;
+  } else {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(SHEET_NAMES.SETTINGS);
+    if (sheet) {
+      var val = sheet.getRange('B2').getValue();
+      if (val) {
+        BOT_TOKEN = val;
+        props.setProperty('TELEGRAM_BOT_TOKEN', val);
+      }
+    }
+  }
+
+  var adminsVal = '';
+  var sheet = ss.getSheetByName(SHEET_NAMES.SETTINGS);
+  if (sheet) {
+    adminsVal = sheet.getRange('B3').getValue();
+  }
+  if (adminsVal) {
+    ADMIN_CHAT_IDS = adminsVal.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s; });
+  }
+}
+
+function sendTelegramMessage_(chatId, text, parseMode) {
+  var url = 'https://api.telegram.org/bot' + BOT_TOKEN;
+  var options = {
+    method: 'post',
+    payload: {
+      chat_id: chatId,
+      text: text,
+      parse_mode: parseMode || 'Markdown'
+    }
+  };
+  try {
+    UrlFetchApp.fetch(url + '/sendMessage', options);
+    return { ok: true };
+  } catch (e) {
+    logAudit_(null, 'TELEGRAM_ERROR', '', 'chatId: ' + chatId + ' | error: ' + e.message);
+    return { ok: false, error: e.message };
+  }
+}
+
+function sendToAllAdmins_(text, parseMode) {
+  var admins = ADMIN_CHAT_IDS || [];
+  var results = [];
+  admins.forEach(function(chatId) {
+    var r = sendTelegramMessage_(chatId, text, parseMode);
+    results.push({ chatId: chatId, result: r });
+  });
+  return results;
+}
+
+function sendDelayAlert_(unloadId, noPolisi, duratiMenit) {
+  var alertText = '⚠️ *ALERT TRUK TELAT*\\n' +
+    'Truk: *' + noPolisi + '*\\n' +
+    'ID: ' + unloadId + '\\n' +
+    'Menunggu: *' + duratiMenit + '* menit\\n' +
+    'Batas parah: 60 menit';
+  return sendToAllAdmins_(alertText, 'Markdown');
+}
+
+function telegramInput_(data, byUser) {
+  requireFields_(data, ['kode_kedatangan', 'command']);
+  var kode = data.kode_kedatangan;
+  var cmd = data.command;
+
+  // Parse command
+  if (cmd === 'mulai') {
+    requireFields_(data, ['dock']);
+    return markMulaiBongkar_({kode_kedatangan: kode, dock: data.dock}, byUser);
+  } else if (cmd === 'selesai') {
+    requireFields_(data, ['qty', 'satuan', 'temuan']);
+    return markSelesaiBongkar_({kode_kedatangan: kode, qty: data.qty, satuan: data.satuan, temuan: data.temuan, keterangan: data.keterangan}, byUser);
+  } else if (cmd === 'status') {
+    // Kembalikan status current
+    var sheet = getVisitsSheet_();
+    var map = getHeaderMap_(sheet);
+    var idCol = map['Unload_ID'];
+    var lastRow = sheet.getLastRow();
+    if (lastRow < 2) return { ok: true, data: [] };
+    var values = sheet.getRange(2, idCol, lastRow - 1, 1).getValues();
+    var result = values.filter(function(r) { return r[0] === kode; });
+    return { ok: true, data: result ? [result[0]] : [] };
+  } else {
+    throw new Error('Command Telegram tidak dikenal: ' + cmd);
+  }
+}
+
+function doPost(e) {
+  // ... existing code ...
+  // ADD case telegram inside the switch
+  case 'telegram':
+    requireRole_(user, [ROLES.ADMIN]);
+    result = telegramInput_(data, user);
+    break;
+  // ... existing code continues
 }

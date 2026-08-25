@@ -155,6 +155,63 @@ alarm bunyi + kartu kedip merah jika truk menunggu melewati batas telat parah (d
 - Minimal 1 ADMIN aktif harus selalu ada; admin tidak bisa menonaktifkan dirinya sendiri
 - URL Web App bersifat rahasia internal — jangan disebar ke luar perusahaan
 
+## 9️⃣ INTEGRASI TELEGRAM (Opsional)
+
+Setelah backend terdeploy, Anda dapat menambahkan integrasi Telegram untuk notifikasi dan input via chat.
+
+### Langkah A — Buat Bot dan Dapatkan Token
+1. Chat dengan @BotFather di Telegram
+2. Kirim perintah `/newbot`
+3. Berikan nama: `Unloading Warehouse Bot` (atau nama lain)
+4. Berikan username: `UnloadingWarehouseBot` (harus unik)
+5. BotFather akan mengembalikan **TOKEN** — simpan dengan aman
+6. Mulai bot dengan `/start` dan gunakan @userinfobot untuk mendapatkan own Chat ID Anda
+
+### Langkah B — Konfigurasi di Google Apps Script
+1. Buka spreadsheet > **Extensions > Apps Script**
+2. Setel BOT_TOKEN dengan salah satu cara:
+   - **Cara 1 (Direkomendasikan)**: Di editor Apps Script, klik **File > Project properties > Settings** tab → tambahkan property baru:
+     - Kunci: `TELEGRAM_BOT_TOKEN`
+     - Nilai: `8253539792:AAHbA_Rfi-N0bfQsV3DFoNlOPJpvlwR5bpo` *(ganti dengan token Anda)*
+   - **Cara 2**: Tambahkan baris ke sheet **Settings**:
+     - Baris 2, Kolom A: `telegram_bot_token`
+     - Baris 2, Kolom B: token Anda
+     - Baris 3, Kolom A: `telegram_admins`
+     - Baris 3, Kolom B: daftar chat ID admin, dipisah koma (contoh: `123456789,987654321`)
+
+3. Jalankan fungsi `setupAll()` sekali untuk menginisialisasi konfigurasi
+
+### Langkah C — Dapatkan Chat ID Admin
+1. Kirim perintah `/start` ke bot dari setiap akun admin
+2. Gunakan @userinfobot atau kirim pesan apa saja ke bot, lihat response yang berisi chat ID
+3. Masukkan chat ID tersebut ke sheet Settings baris 3 kolom B, atau simpan ke PropertiesService
+
+### Langkah D — Perintah yang Tersedia
+
+| Perintah | Deskripsi |
+|---|---|
+| `/status` | Menampilkan status antrean saat ini |
+| `/input UNL-xxx dock=N` | Memulai bongkar di Dock N (sebagai admin/operator) |
+| `/selesai UNL-xxx qty=X satuan=Y temuan=Z` | Menyelesaikan bongkar dengan detail |
+| `/alert` | Kirim manual alert ke semua admin |
+
+### Langkah E — Alert Otomatis (Delay Trigger)
+1. Di Apps Script, buat trigger **time-driven**:
+   - Function: `checkDelayAlerts_`
+   - Deployment: Minutes timer → Every 5 minutes
+2. Trigger ini akan secara otomatis mengirim alert ke admin jika truk menunggu lebih dari 60 menit di dock
+
+### Contoh Notifikasi yang Dikirim
+
+*⚠️ ALERT TRUK TELAT*
+Truk: *B 1234 XYZ*
+ID: UNL-20240115-001
+Menunggu: *65 menit*
+Operator: Fauzi
+Waktu mulai: 09:20. Sudah melewati batas **60 menit**.
+
+---
+
 ## 🗺️ ROADMAP FASE 2 (belum termasuk versi ini)
 
 - Alert WhatsApp/email saat truk menunggu > batas
