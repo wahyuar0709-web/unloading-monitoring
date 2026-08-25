@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Monitoring Unloading Warehouse</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236d5ef0'/%3E%3Cstop offset='.55' stop-color='%234338ca'/%3E%3Cstop offset='1' stop-color='%230ea5e9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='24' height='24' rx='6' fill='url(%23g)'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v5'/%3E%3Cpath d='M9 6.3 12 8.7 15 6.3'/%3E%3Crect x='5.6' y='9' width='12.8' height='7' rx='1.3'/%3E%3Cpath d='M3.3 19.5h17.4'/%3E%3Ccircle cx='9' cy='19.5' r='1.2'/%3E%3Ccircle cx='15' cy='19.5' r='1.2'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236d5ef0'/%3E%3Cstop offset='.55' stop-color='%234338ca'/%3E%3Cstop offset='1' stop-color='%230ea5e9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='24' height='24' fill='url(%23g)'/%3E%3Cg fill='none' stroke='%23fff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v5'/%3E%3Cpath d='M9 6.3 12 8.7 15 6.3'/%3E%3Crect x='5.6' y='9' width='12.8' height='7' rx='1.3'/%3E%3Cpath d='M3.3 19.5h17.4'/%3E%3Ccircle cx='9' cy='19.5' r='1.2'/%3E%3Ccircle cx='15' cy='19.5' r='1.2'/%3E%3C/g%3E%3C/svg%3E">
 <meta name="theme-color" content="#0f172a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -124,6 +126,10 @@ h1,h2,h3,.login-card h1,.panel h2{font-family:var(--font-h)}
 details.urlbox{margin-bottom:8px}
 details.urlbox summary{cursor:pointer;font-size:13px;color:var(--primary);font-weight:700}
 .err-msg{background:var(--err-bg);color:var(--bad);border:1px solid var(--err-line);padding:10px 12px;border-radius:10px;font-size:13px;margin-top:14px;display:flex;align-items:center;gap:7px}
+.field-error{display:none;color:var(--bad);font-size:12px;font-weight:600;margin:5px 2px 0;line-height:1.35}
+.field-error.show{display:block}
+input.field-invalid,select.field-invalid,textarea.field-invalid{border-color:var(--bad);box-shadow:0 0 0 4px color-mix(in srgb,var(--bad) 13%,transparent)}
+
 
 /* ============ TOPBAR ============ */
 header.top{position:sticky;top:0;z-index:40;background:linear-gradient(120deg,#080b18,#131b38 55%,#1a2148);color:#fff;display:flex;align-items:center;gap:8px;padding:12px 14px;box-shadow:0 2px 16px rgba(0,0,0,.24);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.06)}
@@ -144,6 +150,7 @@ nav.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--line)
 nav.tabs button{flex:1;background:none;color:var(--muted);padding:13px 4px;font-size:13px;font-weight:700;border-bottom:2.5px solid transparent;border-radius:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:color .18s var(--ease),border-color .18s var(--ease),background .18s var(--ease)}
 nav.tabs button:hover{color:var(--ink);background:var(--soft)}
 nav.tabs button.on{color:var(--primary);border-bottom-color:var(--primary);background:linear-gradient(180deg,var(--primary-soft),transparent)}
+nav.tabs button .lbl{display:inline}
 main{max-width:1180px;margin:0 auto;padding:16px 12px 90px}
 body[data-mode="monitor"] main{max-width:none;padding-bottom:20px}
 section[id^="view"]:not(.hide){animation:viewIn .22s var(--ease)}
@@ -170,12 +177,12 @@ section[id^="view"]:not(.hide){animation:viewIn .22s var(--ease)}
 .trk .row1{display:flex;align-items:center;gap:8px}
 .trk .plate{font-weight:800;font-size:17.5px;letter-spacing:.3px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums;font-family:var(--font-h)}
 .trk .row1{flex-wrap:wrap;row-gap:6px}
-.badge{font-size:11px;font-weight:700;padding:4.5px 10px;border-radius:99px;color:#fff;white-space:nowrap;letter-spacing:.15px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 2px 6px rgba(0,0,0,.1)}
-.bg-sched{background:linear-gradient(135deg,var(--sched),color-mix(in srgb, var(--sched) 70%, #000))}
-.bg-tiba{background:linear-gradient(135deg,var(--tiba),color-mix(in srgb, var(--tiba) 75%, #000))}
-.bg-work{background:linear-gradient(135deg,var(--work),color-mix(in srgb, var(--work) 75%, #000))}
-.bg-done{background:linear-gradient(135deg,var(--done),color-mix(in srgb, var(--done) 75%, #000))}
-.bg-cancel{background:linear-gradient(135deg,var(--cancel),color-mix(in srgb, var(--cancel) 75%, #000))}
+.badge{font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;color:#fff;white-space:nowrap;letter-spacing:.15px}
+.bg-sched{background:var(--sched)}
+.bg-tiba{background:var(--tiba)}
+.bg-work{background:var(--work)}
+.bg-done{background:var(--done)}
+.bg-cancel{background:var(--cancel)}
 .bg-gray{background:var(--seg);color:var(--muted);font-weight:700;box-shadow:none;border:1px solid var(--line)}
 .trk .meta{color:var(--muted);font-size:13px;margin-top:7px;line-height:1.7}
 .trk .meta b{color:var(--ink);font-weight:600}
@@ -191,14 +198,26 @@ section[id^="view"]:not(.hide){animation:viewIn .22s var(--ease)}
 .a-green{background:linear-gradient(135deg,var(--ok),color-mix(in srgb, var(--ok) 78%, #000));color:#fff}
 .a-red{background:linear-gradient(135deg,var(--bad),color-mix(in srgb, var(--bad) 78%, #000));color:#fff}
 .a-gray{background:var(--seg);color:var(--ink)}
-.empty{color:var(--muted);text-align:center;padding:38px 10px;font-size:14px}
+.empty{color:var(--muted);text-align:center;padding:38px 10px;font-size:14px;display:flex;flex-direction:column;align-items:center;gap:9px}
+.empty .ic{width:26px;height:26px;stroke-width:1.6;opacity:.45}
 .empty::before{content:"";display:block;width:44px;height:44px;margin:0 auto 10px;border-radius:12px;background:var(--seg)}
+.empty b{display:block;color:var(--ink);font-size:13px;margin-bottom:3px}
+.empty span{display:block;color:var(--muted);font-size:12px;line-height:1.45}
 
 /* ============ PANEL / FORM / DASHBOARD ============ */
 .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin-bottom:16px;position:relative}
 .panel h2{font-size:16.5px;margin-bottom:4px;font-weight:800;letter-spacing:-.2px;display:flex;align-items:center;gap:9px}
 .panel h2::before{content:"";width:4px;height:17px;border-radius:3px;background:linear-gradient(180deg,var(--primary),var(--primary-2))}
 .panel p.hint{font-size:13px;color:var(--muted);margin-bottom:12px}
+.acc-id{display:flex;align-items:center;gap:12px;padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.acc-id .av{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-d));color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.acc-id .av .ic{width:22px;height:22px}
+.acc-id b{display:block;font-size:15.5px;font-family:var(--font-h)}
+.acc-id span{color:var(--muted);font-size:12.5px}
+.acc-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 2px;border-bottom:1px solid var(--line)}
+.acc-row:last-child{border-bottom:none}
+.acc-row .lbl2{font-size:14px;font-weight:600;display:flex;align-items:center;gap:9px}
+.acc-row .lbl2 .ic{width:18px;height:18px;color:var(--muted)}
 .seg{display:flex;background:var(--seg);border-radius:11px;padding:4px;margin-bottom:6px}
 .seg button{flex:1;background:none;color:var(--muted);padding:9px;border-radius:8px;font-size:14px;transition:background .18s var(--ease),color .18s var(--ease)}
 .seg button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow);font-weight:700}
@@ -216,20 +235,43 @@ section[id^="view"]:not(.hide){animation:viewIn .22s var(--ease)}
 .stat .l{font-size:12px;color:var(--muted);font-weight:600;margin-top:3px}
 .stat.warn .v{color:var(--warn)}.stat.bad .v{color:var(--bad)}.stat.ok .v{color:var(--ok)}
 
+/* Skala kartu statistik utk layar desktop - sebelumnya angka tetap 26px & grid mentok
+   4 kolom walau lebar layar bertambah, jadi kelihatan kecil/kosong di monitor besar.
+   Efeknya paling terasa di Mode Monitor karena main{max-width:none} di sana (lihat
+   body[data-mode="monitor"] main di atas) - lebar tak terbatas tapi teks tidak ikut skala. */
+@media(min-width:1024px){
+  .stat .v{font-size:30px}
+  .stat .l{font-size:13px}
+  .stat-ic{width:38px;height:38px}
+  .stat-ic .ic{width:18px;height:18px}
+  .stat{padding:18px 20px}
+  body[data-mode="monitor"] .stats{grid-template-columns:repeat(6,1fr)}
+}
+@media(min-width:1600px){
+  body[data-mode="monitor"] .stat .v{font-size:38px}
+  body[data-mode="monitor"] .stat .l{font-size:14px}
+  body[data-mode="monitor"] .stat-ic{width:44px;height:44px}
+  body[data-mode="monitor"] .stat-ic .ic{width:21px;height:21px}
+  body[data-mode="monitor"] .stat{padding:22px 24px}
+}
+
 /* trend chart */
 .trend{display:flex;align-items:flex-end;gap:6px;height:112px;margin-top:12px;padding-bottom:2px;border-bottom:1px solid var(--line)}
-.trend .bar-w{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}
+.trend .bar-w{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;cursor:pointer;border-radius:8px;transition:background .15s var(--ease)}
+.trend .bar-w:hover{background:var(--soft)}
+.trend .bar-w:active{background:var(--seg)}
 .trend .bar-v{font-size:11px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;line-height:1}
 .trend .bar{width:100%;max-width:46px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,var(--primary-2) 0%,var(--primary) 65%,var(--primary-d) 100%);min-height:3px;transition:height .35s var(--ease-soft);box-shadow:0 3px 10px color-mix(in srgb, var(--primary) 35%, transparent)}
-.trend .bar-l{font-size:10px;color:var(--muted);white-space:nowrap;line-height:1}
+.trend .bar-l{font-size:10px;color:var(--muted);white-space:nowrap;line-height:1;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 
 .tbl{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);border-radius:var(--r)}
 .tbl th{background:linear-gradient(180deg,#1a2244,#0e1425);color:#fff;text-align:left;padding:11px 12px;font-size:11.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;position:sticky;top:0;z-index:2}
 .tbl td{padding:10px 12px;border-top:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
 .tbl tr:nth-child(even) td{background:var(--soft)}
 .tbl tr:hover td{background:var(--primary-soft)}
-.scroll-x{overflow-x:auto;border-radius:var(--r);box-shadow:var(--shadow);border:1px solid var(--line)}
-.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.scroll-x{overflow-x:auto;border-radius:var(--r);box-shadow:var(--shadow),inset -14px 0 10px -12px rgba(15,23,58,.14);border:1px solid var(--line)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;background:var(--soft);border:1px solid var(--line);border-radius:var(--r-sm);padding:10px}
+.filters input,.filters select{background:var(--field)}
 .filters input,.filters select{width:auto;min-width:130px;flex:1}
 .filters .btn.small{align-self:stretch;display:flex;align-items:center}
 .subnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
@@ -269,6 +311,29 @@ details.tbl-wrap summary{cursor:pointer;font-weight:700;padding:14px 17px;font-s
 details.tbl-wrap .inner{padding:0 15px 15px}
 .maxh{max-height:420px;overflow:auto}
 
+
+/* ============ P2 MOBILE UX ============ */
+.filter-reset{width:auto!important;margin-top:0!important;min-height:40px;padding:9px 13px!important}
+.mobile-list{display:none}
+.mobile-visit{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px;margin-top:9px;box-shadow:var(--shadow)}
+.mobile-visit-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.mobile-visit-plate{font-family:var(--font-h);font-weight:800;font-size:16px;letter-spacing:.1px}
+.mobile-visit-supplier{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62vw}
+.mobile-visit-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line)}
+.mobile-meta-item{min-width:0}.mobile-meta-label{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.35px;color:var(--muted);font-weight:700}.mobile-meta-value{display:block;font-size:13px;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mobile-visit-note{font-size:11.5px;color:var(--muted);margin-top:9px}
+.mobile-empty{padding:28px 12px;text-align:center;color:var(--muted);font-size:13px;background:var(--soft);border:1px dashed var(--line);border-radius:12px}
+@media(max-width:600px){
+  .desktop-table{display:none!important}
+  .mobile-list{display:block}
+  .filters{grid-template-columns:1fr 1fr!important}
+  .filters input[type=date],.filters input,.filters select{min-height:44px}
+  .filters .btn{min-height:44px}
+  .filter-reset{display:inline-flex!important}
+  .filter-reset.hide{display:none!important}
+}
+@media(min-width:601px){.filter-reset{display:inline-flex!important}.filter-reset.hide{display:none!important}}
+
 /* ============ MODAL & TOAST ============ */
 #modalOverlay{position:fixed;inset:0;background:rgba(5,8,18,.68);backdrop-filter:blur(3px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .18s var(--ease)}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -287,6 +352,11 @@ details.tbl-wrap .inner{padding:0 15px 15px}
 .toast.ok{background:linear-gradient(135deg,var(--ok),#047857);border-left-color:rgba(255,255,255,.5)}
 .toast .ic{width:17px;height:17px;flex-shrink:0}
 .toast button.retry{background:rgba(255,255,255,.2);color:#fff;padding:6px 12px;font-size:12px;flex-shrink:0}
+.offline-bar{display:none;align-items:center;gap:8px;background:linear-gradient(135deg,var(--bad),#b91c1c);color:#fff;font-size:13px;font-weight:600;padding:9px 14px;text-align:center;justify-content:center}
+.offline-bar.show{display:flex}
+.update-bar{display:none;align-items:center;gap:10px;background:var(--primary);color:#fff;font-size:13px;font-weight:600;padding:9px 14px;justify-content:center}
+.update-bar.show{display:flex}
+.update-bar button{background:#fff;color:var(--primary);padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700}
 @keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
 
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite}
@@ -296,12 +366,6 @@ details.tbl-wrap .inner{padding:0 15px 15px}
 .skel{height:64px;border-radius:var(--r);margin-bottom:10px;background:linear-gradient(90deg,var(--soft) 25%,var(--line) 37%,var(--soft) 63%);background-size:400% 100%;animation:shimmer 1.3s infinite}
 .skel.thin{height:36px}
 @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
-
-footer.cred{position:fixed;bottom:0;left:0;right:0;background:color-mix(in srgb, var(--card) 92%, transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:45;box-shadow:0 -4px 16px rgba(15,23,58,.06)}
-footer.cred .who{flex:1;font-size:13px}
-footer.cred .who b{display:block;font-size:14px;font-family:var(--font-h)}
-footer.cred .who span{color:var(--muted);font-size:12px}
-body[data-mode="monitor"] footer.cred{display:none}
 
 /* ============ RESPONSIVE <600px ============ */
 @media(max-width:599px){
@@ -319,13 +383,52 @@ body[data-mode="monitor"] footer.cred{display:none}
   .subnav button{font-size:12px;padding:6px 10px}
   .list-row{font-size:13px;padding:8px 2px}
   .maxh{max-height:300px}
-  nav.tabs{top:46px}
-  nav.tabs button{font-size:11.5px;gap:4px;padding:11px 2px;white-space:nowrap}
   header.top{padding:9px 10px}
   header.top .ttl{font-size:14px}
-  .tbtn{padding:7px 9px}
+  .tbtn{padding:7px 9px;min-width:40px;min-height:40px;font-size:15px}
+  .trend{gap:3px}
+  .trend .bar-v{font-size:10px}
+  .trend .bar-l{font-size:8.5px}
   .mon-head{gap:10px;padding:12px 14px}
   #bigClock{font-size:32px}
+
+  /* ===== Bottom navigation ala aplikasi mobile profesional ===== */
+  :root{--mnav-h:66px}
+  nav.tabs{
+    position:fixed;top:auto;left:0;right:0;bottom:0;z-index:47;
+    height:calc(var(--mnav-h) + env(safe-area-inset-bottom,0px));
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));
+    gap:3px;
+    border-bottom:none;
+    border-top:1px solid var(--line);
+    box-shadow:0 -6px 20px rgba(15,23,58,.1);
+    background:var(--card);
+  }
+  nav.tabs button{
+    flex-direction:column;
+    justify-content:center;
+    gap:3px;
+    padding:6px 2px;
+    min-height:52px;
+    border-radius:13px;
+    border-bottom:none;
+    font-size:10.5px;
+    font-weight:700;
+    line-height:1.15;
+  }
+  nav.tabs button .ic{width:21px;height:21px;stroke-width:2.1}
+  nav.tabs button .lbl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  nav.tabs button.on{
+    color:var(--primary);
+    background:var(--primary-soft);
+    border-bottom-color:transparent;
+  }
+  nav.tabs button:active{background:color-mix(in srgb, var(--primary) 12%, transparent)}
+  [data-theme="dark"] nav.tabs{border-top-color:rgba(255,255,255,.08)}
+
+  body:not([data-mode="monitor"]) main{
+    padding-bottom:calc(var(--mnav-h) + env(safe-area-inset-bottom,0px) + 16px);
+  }
 }
 
 /* ============ REDUCED MOTION ============ */
@@ -335,12 +438,44 @@ body[data-mode="monitor"] footer.cred{display:none}
   .skel{animation:none;opacity:.7}
   .dot::after{display:none}
 }
+
+/* ============ P2 FINAL — ADMIN MOBILE UX ============ */
+.admin-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.admin-actions h2{margin:0}
+.admin-item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:12px 4px;border-bottom:1px solid var(--line)}
+.admin-item:last-child{border-bottom:none}
+.admin-main{min-width:0}
+.admin-main b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px}
+.admin-actions .btn,.admin-item .btn{width:auto;margin-top:0;white-space:nowrap}
+.admin-mobile-stack{display:none}
+.admin-mobile-stack .admin-item{grid-template-columns:1fr}
+.admin-mobile-stack .admin-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.admin-mobile-stack .admin-buttons .btn{width:100%}
+@media(max-width:599px){
+  #adminNav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  #adminNav button{justify-content:center;min-height:42px;padding:8px 9px}
+  #adminNav button:last-child{grid-column:1/-1}
+  #adminBody{padding:14px}
+  .admin-actions{align-items:stretch}
+  .admin-actions .btn{min-height:44px}
+  .admin-desktop-list{display:none}
+  .admin-mobile-stack{display:block}
+  .admin-item{padding:13px 0}
+  .admin-main b{font-size:14px}
+  .admin-main .hint{margin-top:3px}
+  .admin-buttons{margin-top:4px}
+}
 </style>
 </head>
 <body data-mode="operasi">
 
 <!-- ============ SPRITE IKON (lucide-style, stroke currentColor) ============ -->
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+<!-- Logo mark aplikasi - krat kargo turun ke platform dock (melambangkan "unloading").
+     Dipakai khusus utk 3 titik brand (login hero, login mobile, chip topbar) -
+     terpisah dari #i-factory yang tetap dipakai kartu statistik "Dock Terpakai". -->
+<symbol id="i-logo-mark" viewBox="0 0 24 24"><path d="M12 2v5.3"/><path d="m8.7 5.6 3.3 3 3.3-3"/><rect x="5.2" y="9" width="13.6" height="7.6" rx="1.4"/><path d="M3 20h18"/><circle cx="9" cy="20" r="1.3"/><circle cx="15" cy="20" r="1.3"/></symbol>
 <symbol id="i-factory" viewBox="0 0 24 24"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></symbol>
 <symbol id="i-package" viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></symbol>
 <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
@@ -379,7 +514,7 @@ body[data-mode="monitor"] footer.cred{display:none}
 <div id="loginScreen">
   <div class="login-wrap">
     <div class="login-brand">
-      <div class="login-logo"><svg class="ic" aria-hidden="true"><use href="#i-factory"/></svg></div>
+      <div class="login-logo"><svg class="ic" aria-hidden="true"><use href="#i-logo-mark"/></svg></div>
       <h1>Monitoring Unloading</h1>
       <p class="sub">Warehouse Manufacturing &mdash; Bongkar Muat</p>
       <ul class="login-feat">
@@ -390,7 +525,7 @@ body[data-mode="monitor"] footer.cred{display:none}
     </div>
     <form class="login-card" id="loginForm" autocomplete="off">
       <div class="login-card-mobile-brand">
-        <div class="login-logo"><svg class="ic" aria-hidden="true"><use href="#i-factory"/></svg></div>
+        <div class="login-logo"><svg class="ic" aria-hidden="true"><use href="#i-logo-mark"/></svg></div>
         <div>
           <h1>Monitoring Unloading</h1>
           <p class="sub">Warehouse Manufacturing &mdash; Bongkar Muat</p>
@@ -417,21 +552,21 @@ body[data-mode="monitor"] footer.cred{display:none}
 
 <!-- ================= APP ================= -->
 <div id="appScreen" class="hide">
+  <div class="offline-bar" id="offlineBar">Anda sedang offline - aksi tulis dinonaktifkan sampai koneksi kembali</div>
+  <div class="update-bar" id="updateBar">Versi baru tersedia<button id="btnUpdateReload" type="button">Muat ulang</button></div>
   <header class="top">
     <span class="dot" id="connDot"></span>
-    <span class="ttl"><span class="brand-chip"><svg class="ic" aria-hidden="true"><use href="#i-factory"/></svg></span> Monitoring Unloading</span>
-    <button class="tbtn" id="btnTheme" title="Ganti tema" aria-label="Ganti tema terang/gelap"></button>
-    <button class="tbtn" id="btnKey" title="Ganti sandi" aria-label="Ganti sandi"><svg class="ic" aria-hidden="true"><use href="#i-key"/></svg></button>
+    <span class="ttl"><span class="brand-chip"><svg class="ic" aria-hidden="true"><use href="#i-logo-mark"/></svg></span> Monitoring Unloading</span>
     <button class="tbtn" id="btnMode" title="Ganti tampilan" aria-label="Ganti tampilan monitor/operasi">Monitor</button>
     <button class="tbtn" id="btnFs" title="Layar penuh" aria-label="Layar penuh"><svg class="ic" aria-hidden="true"><use href="#i-maximize"/></svg></button>
-    <button class="tbtn" id="btnOut" title="Keluar" aria-label="Keluar"><svg class="ic" aria-hidden="true"><use href="#i-power"/></svg></button>
   </header>
 
   <nav class="tabs" id="tabsBar">
-    <button data-tab="queue" class="on"><svg class="ic" aria-hidden="true"><use href="#i-package"/></svg> Antrean</button>
-    <button data-tab="form"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg> Input Truk</button>
-    <button data-tab="dash"><svg class="ic" aria-hidden="true"><use href="#i-chart"/></svg> Dashboard</button>
-    <button data-tab="admin" id="tabAdmin"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg> Admin</button>
+    <button data-tab="queue" class="on"><svg class="ic" aria-hidden="true"><use href="#i-package"/></svg><span class="lbl">Antrean</span></button>
+    <button data-tab="form"><svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg><span class="lbl">Input Truk</span></button>
+    <button data-tab="dash"><svg class="ic" aria-hidden="true"><use href="#i-chart"/></svg><span class="lbl">Dashboard</span></button>
+    <button data-tab="admin" id="tabAdmin"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg><span class="lbl">Admin</span></button>
+    <button data-tab="akun"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg><span class="lbl">Akun</span></button>
   </nav>
 
   <main>
@@ -447,22 +582,22 @@ body[data-mode="monitor"] footer.cred{display:none}
           <button data-v="jadwal" id="segJadwal">Buat Jadwal</button>
         </div>
         <label>Supplier <span style="color:var(--bad)">*</span> <span class="helper">Wajib diisi</span></label>
-        <select id="fVendor" required aria-label="Supplier"></select>
+        <select id="fVendor" required aria-label="Supplier" aria-describedby="fVendorErr"></select><div class="field-error" id="fVendorErr"></div>
         <label>No. Polisi <span class="helper">Opsional &middot; Format: B 1234 XYZ</span></label>
-        <input id="fPol" placeholder="B 1234 XYZ (opsional)" style="text-transform:uppercase" aria-label="Nomor polisi kendaraan" pattern="[A-Z0-9\s]{3,}" title="Jika diisi: huruf, angka, dan spasi minimal 3 karakter">
+        <input id="fPol" placeholder="B 1234 XYZ (opsional)" style="text-transform:uppercase" aria-label="Nomor polisi kendaraan" aria-describedby="fPolErr" pattern="[A-Z0-9\s]{3,}" title="Jika diisi: huruf, angka, dan spasi minimal 3 karakter"><div class="field-error" id="fPolErr"></div>
         <label>Nama Supir <span class="helper">(opsional)</span></label>
-        <input id="fSupir" placeholder="Opsional" aria-label="Nama supir">
+        <input id="fSupir" placeholder="Opsional" aria-label="Nama supir" aria-describedby="fSupirErr"><div class="field-error" id="fSupirErr"></div>
         <label>No. Surat Jalan / PO</label>
         <input id="fSJ" placeholder="Opsional" aria-label="No. surat jalan atau PO">
         <label>Jenis Transaksi</label>
-        <select id="fJenis" required aria-label="Jenis transaksi">
+        <select id="fJenis" required aria-label="Jenis transaksi" aria-describedby="fJenisErr">
           <option value="">-- Pilih jenis --</option>
           <option>Penerimaan</option>
           <option>Retur</option>
-        </select>
+        </select><div class="field-error" id="fJenisErr"></div>
         <div id="wrapPlan" class="hide">
           <label>Rencana Tiba <span style="color:var(--bad)">*</span></label>
-          <input id="fPlan" type="datetime-local">
+          <input id="fPlan" type="datetime-local" aria-describedby="fPlanErr"><div class="field-error" id="fPlanErr"></div>
         </div>
         <label>Keterangan</label>
         <textarea id="fCatatan" rows="2" placeholder="Opsional"></textarea>
@@ -472,6 +607,13 @@ body[data-mode="monitor"] footer.cred{display:none}
 
     <section id="viewDash" class="hide">
       <div class="stats" id="dashStats"></div>
+      <div class="ops-alert-panel" id="opsAlertPanel" aria-label="Status operasional">
+        <div class="ops-alert-head">
+          <div class="ops-alert-title"><svg class="ic" aria-hidden="true"><use href="#i-alert"/></svg> Status Operasional <span class="ops-alert-count" id="opsAlertCount">0</span></div>
+          <span class="hint" id="opsAlertHint">Memantau kondisi hari ini</span>
+        </div>
+        <div class="ops-alert-body" id="opsAlertBody"></div>
+      </div>
       <div class="panel">
         <h2>Tren 7 Hari</h2>
         <p class="hint">Jumlah truk selesai bongkar per hari (Asia/Jakarta).</p>
@@ -486,21 +628,47 @@ body[data-mode="monitor"] footer.cred{display:none}
             <option>Dijadwalkan</option><option>Tiba</option>
             <option>Sedang Bongkar</option><option>Selesai</option><option>Dibatalkan</option>
           </select>
-          <button class="btn small sec" id="btnCsv"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> CSV</button>
+          <button class="btn small sec" id="btnCsv"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> CSV</button><button class="btn small sec filter-reset hide" id="btnResetDash" type="button">Reset</button>
         </div>
-        <div class="scroll-x maxh"><table class="tbl" id="dashTbl"></table></div>
+        <div class="scroll-x maxh desktop-table"><table class="tbl" id="dashTbl"></table></div><div class="mobile-list" id="dashMobileList" aria-label="Daftar truk"></div>
       </div>
     </section>
 
     <section id="viewAdmin" class="hide">
       <div class="subnav" id="adminNav">
-        <button data-a="users" class="on"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg> Users</button>
+        <button data-a="users" class="on"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg> Pengguna</button>
         <button data-a="operators"><svg class="ic" aria-hidden="true"><use href="#i-wrench"/></svg> Operator</button>
         <button data-a="suppliers"><svg class="ic" aria-hidden="true"><use href="#i-tag"/></svg> Supplier</button>
-        <button data-a="settings"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg> Settings</button>
+        <button data-a="settings"><svg class="ic" aria-hidden="true"><use href="#i-sliders"/></svg> Pengaturan</button>
         <button data-a="audit"><svg class="ic" aria-hidden="true"><use href="#i-clipboard"/></svg> Audit Log</button>
       </div>
       <div class="panel" id="adminBody"><p class="hint">Memuat...</p></div>
+    </section>
+
+    <section id="viewAccount" class="hide">
+      <div class="panel">
+        <div class="acc-id">
+          <span class="av"><svg class="ic" aria-hidden="true"><use href="#i-user"/></svg></span>
+          <div><b id="whoName">-</b><span id="whoRole">-</span></div>
+        </div>
+        <div class="acc-row">
+          <span class="lbl2"><svg class="ic" aria-hidden="true"><use href="#i-moon"/></svg> Tema Tampilan</span>
+          <button class="btn small sec" id="btnTheme"></button>
+        </div>
+        <div class="acc-row">
+          <span class="lbl2"><svg class="ic" aria-hidden="true"><use href="#i-key"/></svg> Ganti Sandi</span>
+          <button class="btn small sec" id="btnKey">Ganti</button>
+        </div>
+        <div class="acc-row">
+          <span class="lbl2"><svg class="ic" aria-hidden="true"><use href="#i-rotate"/></svg> Segarkan Data</span>
+          <button class="btn small sec" id="btnRefreshTop">Refresh</button>
+        </div>
+        <div class="acc-row">
+          <span class="lbl2"><svg class="ic" aria-hidden="true"><use href="#i-power"/></svg> Keluar Aplikasi</span>
+          <button class="btn small sec" id="btnOut">Keluar</button>
+        </div>
+        <p class="hint" id="appVersion" style="text-align:center;margin:14px 0 0"></p>
+      </div>
     </section>
 
     <!-- MODE MONITOR -->
@@ -526,27 +694,27 @@ body[data-mode="monitor"] footer.cred{display:none}
               <option>Dijadwalkan</option><option>Tiba</option>
               <option>Sedang Bongkar</option><option>Selesai</option><option>Dibatalkan</option>
             </select>
-            <button class="btn small sec" id="btnCsvMon"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> CSV</button>
+            <button class="btn small sec" id="btnCsvMon"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> CSV</button><button class="btn small sec filter-reset hide" id="btnResetMon" type="button">Reset</button>
           </div>
-          <div class="scroll-x maxh"><table class="tbl" id="monTbl"></table></div>
+          <div class="scroll-x maxh desktop-table"><table class="tbl" id="monTbl"></table></div><div class="mobile-list" id="monMobileList" aria-label="Daftar truk monitor"></div>
         </div>
       </details>
     </section>
   </main>
 
-  <footer class="cred">
-    <div class="who"><b id="whoName">-</b><span id="whoRole">-</span></div>
-    <button class="btn small sec" id="btnRefreshTop"><svg class="ic" aria-hidden="true"><use href="#i-rotate"/></svg> Refresh</button>
-  </footer>
+
 </div>
 
-<div id="modalOverlay" class="hide"><div class="modal" id="modalBox"></div></div>
-<div id="toastWrap"></div>
+<div id="modalOverlay" class="hide" aria-hidden="true"><div class="modal" id="modalBox" role="dialog" aria-modal="true" aria-labelledby="modalTitle" tabindex="-1"></div></div>
+<div id="toastWrap" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
 'use strict';
 /* ================= KONFIG & STATE ================= */
-var LS = { URL:'unl_url', USER:'unl_user', PASS:'unl_pass', MODE:'unl_mode' };
+var APP_VERSION='2.2.3';
+var APP_BUILD_NOTE='UX P2 · mobile cards · filter reset · responsive operator flow · fix stats dobel saat pindah Mode Monitor · skala kartu statistik desktop · logo mark SVG + favicon · empty-state berilustrasi · fix Mode Monitor dipaksa gelap';
+console.log('Monitoring Unloading v'+APP_VERSION+' — '+APP_BUILD_NOTE);
+var LS = { URL:'unl_url', USER:'unl_user', MODE:'unl_mode', SESS:'unl_sess' };
 var SATUAN_OPTS = ['Pallet','Palet','Bags','box','Dus','Drum','pcs','tanki','Pail','Roll','Unit','Lainnya'];
 var TEMUAN_FALLBACK = ['TIDAK ADA (NORMAL)','Actual tidak sama dengan surat jalan','Barang rusak','Kemasan rusak / bocor','Dokumen tidak lengkap','Lainnya'];
 var ST_LIST = ['Dijadwalkan','Tiba','Sedang Bongkar','Selesai','Dibatalkan'];
@@ -554,14 +722,19 @@ var ST_CLS = {'Dijadwalkan':'bg-sched','Tiba':'bg-tiba','Sedang Bongkar':'bg-wor
 var ST_BORD = {'Dijadwalkan':'','Tiba':'st-Tiba','Sedang Bongkar':'st-SedangBongkar','Selesai':'st-Selesai','Dibatalkan':'st-Dibatalkan'};
 
 var S = {
-  me:null, cred:{u:'',p:''}, settings:{}, suppliers:[], operators:[],
+  me:null, token:null, settings:{}, suppliers:[], operators:[],
   visits:[], users:[], audit:[], temuanOpts:TEMUAN_FALLBACK,
   jumlahDock:3, serverDelta:0,
   mode:'operasi', tab:'queue', sumber:'walkin', adminTab:'users',
   refreshTimer:null, clockTimer:null, tickTimer:null, rfCount:0, spinning:false,
   knownIds:null, lateSet:new Set(), firstLoad:true,
   fDash:{date:'',vendor:'',status:''}, fMon:{date:'',vendor:'',status:''},
-  lastUpdate:null, audioCtx:null
+  lastUpdate:null, audioCtx:null,
+  refreshSeq:0, appliedSeq:0, // PHASE 1D — cegah race refresh/mutation (lihat refreshData())
+  online:navigator.onLine, // PHASE 1E
+  // PHASE 1E — cache tanda render terakhir (lihat listSig()); dipakai renderDash()/renderMonitor()
+  // utk melewati agregasi & DOM-write kalau data yg relevan belum berubah sejak render sebelumnya.
+  _trendSig:null, _dashSig:null, _monStatSig:null, _monTblSig:null
 };
 
 function $(id){ return document.getElementById(id); }
@@ -579,7 +752,7 @@ function themePref(){
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme',t);
   var b=$('btnTheme');
-  if(b){ b.innerHTML=ic(t==='dark'?'sun':'moon'); b.title=(t==='dark'?'Mode terang':'Mode gelap'); }
+  if(b){ b.innerHTML=ic(t==='dark'?'sun':'moon')+' '+(t==='dark'?'Terang':'Gelap'); b.title=(t==='dark'?'Mode terang':'Mode gelap'); }
 }
 applyTheme(themePref());
 
@@ -593,79 +766,191 @@ function minsSince(iso,base){ if(!iso)return null; var ms=base-nowMsOf(iso); ret
 function nowMsOf(iso){ return Date.parse(iso)||Date.now(); }
 function durStr(m){ if(m==null)return '-'; var h=Math.floor(m/60), r=m%60; return h>0 ? h+'j '+pad2(r)+'m' : r+' mnt'; }
 
-/* ================= API ================= */
-function apiUrl(action,params){
-  var base = localStorage.getItem(LS.URL)||'';
-  var q = '?action='+encodeURIComponent(action);
-  Object.keys(params||{}).forEach(function(k){ if(params[k]!==''&&params[k]!=null) q+='&'+encodeURIComponent(k)+'='+encodeURIComponent(params[k]); });
-  q += '&username='+encodeURIComponent(S.cred.u)+'&password='+encodeURIComponent(S.cred.p);
-  return base+q;
-}
+/* ================= API =================
+   SECURITY (Phase 1A): password HANYA pernah dikirim sekali, pada POST
+   action:"login". Setelah login, setiap request (GET maupun POST) memakai
+   token sesi (S.token) yang didapat dari backend - password tidak pernah
+   disimpan maupun dikirim ulang setelah itu. */
 function handleServerDelta(j){ if(j&&j.server_time){ var st=Date.parse(j.server_time); if(!isNaN(st)) S.serverDelta=st-Date.now(); } }
 function authFail(msg){ return String(msg||'').indexOf('AUTH:')===0; }
 
 async function callFetch(url,opt){
-  var res = await fetch(url,opt);
+  var res = await fetchWithTimeout(url,opt,REQUEST_TIMEOUT_MS);
   var j = await res.json();
   handleServerDelta(j);
   if(!j.ok) throw new Error(j.error||'Kesalahan server');
   return j;
 }
-async function apiGet(action,params){
-  if(!localStorage.getItem(LS.URL)) throw new Error('URL Web App belum diisi.');
-  return callFetch(apiUrl(action,params),{method:'GET',redirect:'follow'});
+// PHASE 1C — request timeout. fetch() browser TIDAK punya timeout bawaan;
+// tanpa ini, request ke GAS Web App yang macet (wifi gudang tidak stabil)
+// bisa menggantung tanpa batas dan UI tampak beku. AbortController
+// membatalkan request setelah timeoutMs dan melempar error 'TIMEOUT: ...'
+// yang bisa dibedakan dari error AUTH/bisnis - lihat isRetryableError_().
+var REQUEST_TIMEOUT_MS = 20000;  // request biasa (GAS cold-start bisa beberapa detik)
+var REVOKE_TIMEOUT_MS = 8000;    // logout best-effort, tidak boleh menggantung lama
+async function fetchWithTimeout(url,opt,timeoutMs){
+  var ctrl = new AbortController();
+  var t = setTimeout(function(){ ctrl.abort(); }, timeoutMs);
+  try{
+    return await fetch(url, Object.assign({}, opt, {signal: ctrl.signal}));
+  }catch(err){
+    if(err.name==='AbortError') throw new Error('TIMEOUT: Server tidak merespons dalam '+Math.round(timeoutMs/1000)+' detik.');
+    throw err;
+  }finally{
+    clearTimeout(t);
+  }
 }
-async function apiPost(action,payload){
+// PHASE 1C — retry semantics. Hanya kegagalan JARINGAN/TIMEOUT yang aman
+// diulang otomatis (request tidak pernah sampai/dibalas server, dan aksi
+// tulis sudah idempotent lewat requestId - lihat MUTATING_ACTIONS).
+// Error AUTH (sesi habis) dan error bisnis/validasi dari server BUKAN
+// kegagalan jaringan - mengulang tidak akan mengubah hasil, jadi TIDAK
+// di-auto-retry, cukup ditampilkan ke user.
+function isRetryableError_(msg){
+  var s = String(msg||'');
+  if(s.indexOf('TIMEOUT:')===0) return true;
+  if(/Failed to fetch|NetworkError|network error|ERR_NETWORK|ERR_INTERNET|Load failed/i.test(s)) return true;
+  return false;
+}
+// Satu titik masuk terpusat untuk semua request terautentikasi.
+// Membawa token sesi (bukan password) di body POST.
+// PHASE 1B — idempotency. Aksi yang mengubah state harus bawa requestId
+// supaya kalau request yang sama dikirim ulang (retry setelah timeout,
+// dst.) backend tidak menjalankan aksinya dua kali - lihat MUTATING_ACTIONS
+// di Code.gs (daftar di sini harus sama).
+var MUTATING_ACTIONS = ['createWalkin','markTiba','markMulaiBongkar','pauseBreak','resumeBreak',
+  'markSelesaiBongkar','createSchedule','cancel','editVisit','addOperator','setOperatorAktif',
+  'updateSetting','createUser','resetPassword','setUserAktif','changePassword'];
+function genRequestId(){
+  if(window.crypto&&crypto.randomUUID)return crypto.randomUUID();
+  return 'r'+Date.now().toString(36)+Math.random().toString(36).slice(2);
+}
+async function apiCall(action,payload,requestId){
+  // PHASE 1E — OFFLINE FAIL-FAST. Kalau browser tahu pasti sedang offline,
+  // jangan tunggu sampai timeout 20 detik - gagal seketika dengan pesan
+  // yang jelas. navigator.onLine bisa false-positive (tetap true walau
+  // sebenarnya tidak ada internet), makanya TIMEOUT/network-error dari
+  // fetch tetap jadi jaring pengaman utama; ini cuma jalan pintas untuk
+  // kasus yang paling jelas (mode pesawat, wifi terputus, dst.).
+  if(!navigator.onLine){ throw new Error('OFFLINE: Tidak ada koneksi internet.'); }
   var base = localStorage.getItem(LS.URL);
   if(!base) throw new Error('URL Web App belum diisi.');
   var body = {action:action};
-  Object.keys(payload||{}).forEach(function(k){ body[k]=payload[k]; });
-  body.username=S.cred.u; body.password=S.cred.p;
+  Object.keys(payload||{}).forEach(function(k){ if(payload[k]!==''&&payload[k]!=null) body[k]=payload[k]; });
+  body.token=S.token;
+  if(MUTATING_ACTIONS.indexOf(action)!==-1) body.requestId = requestId||genRequestId();
   return callFetch(base,{method:'POST',redirect:'follow',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
     body:JSON.stringify(body)});
 }
+async function apiGet(action,params){
+  if(!localStorage.getItem(LS.URL)) throw new Error('URL Web App belum diisi.');
+  return apiCall(action,params);
+}
+async function apiPost(action,payload,requestId){
+  return apiCall(action,payload,requestId);
+}
+// Satu-satunya tempat username+password dikirim - hanya pada login.
 async function apiLogin(u,p){
   var base = localStorage.getItem(LS.URL);
   if(!base) throw new Error('URL Web App belum diisi. Klik "URL Web App" di atas.');
-  var res = await fetch(base,{method:'POST',redirect:'follow',
+  var res = await fetchWithTimeout(base,{method:'POST',redirect:'follow',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({action:'login',username:u,password:p})});
+    body:JSON.stringify({action:'login',username:u,password:p})},REQUEST_TIMEOUT_MS);
   var j = await res.json();
   if(!j.ok) throw new Error(j.error||'Login gagal');
   handleServerDelta(j);
   return j.data;
 }
+// Beri tahu backend untuk mencabut token saat ini (logout). Best-effort,
+// tidak memblokir alur logout di UI kalau gagal (mis. offline) - dan
+// dibatasi REVOKE_TIMEOUT_MS supaya tidak menggantung di background.
+function apiRevokeSession(token){
+  var base = localStorage.getItem(LS.URL);
+  if(!base||!token) return;
+  fetchWithTimeout(base,{method:'POST',redirect:'follow',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action:'logout',token:token})},REVOKE_TIMEOUT_MS).catch(function(){});
+}
+// Simpan token sesi (bukan password) agar sesi bisa dilanjutkan sampai
+// masa berlakunya habis. Token punya expiry dan bisa dicabut lewat logout.
+function saveSession(data){
+  try{
+    localStorage.setItem(LS.SESS, JSON.stringify({
+      token:data.token,
+      exp:Date.now()+((Number(data.expires_in)||14400)*1000),
+      username:data.username, nama:data.nama, role:data.role
+    }));
+  }catch(e){}
+}
+function clearSession(){
+  try{ localStorage.removeItem(LS.SESS); }catch(e){}
+}
+function loadSession(){
+  try{
+    var raw=localStorage.getItem(LS.SESS);
+    if(!raw) return null;
+    var sess=JSON.parse(raw);
+    if(!sess||!sess.token||!sess.exp||sess.exp<=Date.now()){ clearSession(); return null; }
+    return sess;
+  }catch(e){ clearSession(); return null; }
+}
 
 /* ================= TOAST & MODAL ================= */
+var modalReturnFocus=null;
+var modalKeyHandler=null;
 function toast(msg,type,retryCb){
   var t=document.createElement('div');
   t.className='toast'+(type==='err'?' err':type==='ok'?' ok':'');
+  t.setAttribute('role',type==='err'?'alert':'status');
   var icon=type==='err'?ic('alert'):type==='ok'?ic('check-c'):ic('clock');
   t.innerHTML=icon+'<span style="flex:1">'+esc(msg)+'</span>';
-  if(retryCb){ var b=document.createElement('button'); b.className='retry'; b.textContent='↳ Coba Lagi';
+  if(retryCb){ var b=document.createElement('button'); b.className='retry'; b.type='button'; b.textContent='↳ Coba Lagi';
     b.onclick=function(){ t.remove(); retryCb(); }; t.appendChild(b); }
   $('toastWrap').appendChild(t);
   setTimeout(function(){ t.remove(); }, retryCb?12000:3200);
 }
 function openModal(title,sub,bodyHtml,onMount,actions){
-  var box=$('modalBox');
-  box.innerHTML='<h3>'+esc(title)+'</h3>'+(sub?'<div class="msub">'+esc(sub)+'</div>':'')+
+  var overlay=$('modalOverlay'),box=$('modalBox');
+  modalReturnFocus=(document.activeElement&&document.activeElement!==document.body)?document.activeElement:null;
+  box.setAttribute('role','dialog'); box.setAttribute('aria-modal','true'); box.setAttribute('aria-labelledby','modalTitle');
+  box.innerHTML='<h3 id="modalTitle">'+esc(title)+'</h3>'+(sub?'<div class="msub">'+esc(sub)+'</div>':'')+
     '<div id="mBody">'+bodyHtml+'</div><div class="mfoot" id="mFoot"></div>';
   var foot=$('mFoot');
   (actions||[{label:'Tutup',cls:'sec'}]).forEach(function(a){
     var b=document.createElement('button');
-    b.className='btn '+(a.cls||'sec'); b.style.marginTop='0'; b.innerHTML=a.label;
+    b.className='btn '+(a.cls||'sec'); b.style.marginTop='0'; b.type='button'; b.innerHTML=a.label;
     b.onclick=function(){ if(a.onClick){ a.onClick(box); } else closeModal(); };
     foot.appendChild(b);
   });
-  $('modalOverlay').classList.remove('hide');
+  overlay.classList.remove('hide'); overlay.setAttribute('aria-hidden','false');
+  if(modalKeyHandler) document.removeEventListener('keydown',modalKeyHandler);
+  modalKeyHandler=function(e){
+    if(e.key==='Escape'){ e.preventDefault(); closeModal(); return; }
+    if(e.key!=='Tab') return;
+    var focusables=Array.prototype.slice.call(box.querySelectorAll('button,input,select,textarea,[tabindex]:not([tabindex="-1"])')).filter(function(el){return !el.disabled&&el.offsetParent!==null;});
+    if(!focusables.length){e.preventDefault();box.focus();return;}
+    var first=focusables[0],last=focusables[focusables.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  };
+  document.addEventListener('keydown',modalKeyHandler);
   if(onMount) onMount(box);
+  setTimeout(function(){
+    var first=box.querySelector('input,select,textarea,button');
+    if(first) first.focus(); else box.focus();
+  },0);
 }
-function closeModal(){ $('modalOverlay').classList.add('hide'); $('modalBox').innerHTML=''; }
-function confirmDialog(msg,cb,danger){
+function closeModal(){
+  var overlay=$('modalOverlay'),box=$('modalBox');
+  overlay.classList.add('hide'); overlay.setAttribute('aria-hidden','true'); box.innerHTML='';
+  if(modalKeyHandler){document.removeEventListener('keydown',modalKeyHandler);modalKeyHandler=null;}
+  var el=modalReturnFocus; modalReturnFocus=null;
+  if(el&&document.contains(el)&&!el.disabled){setTimeout(function(){try{el.focus();}catch(e){}},0);}
+}
+function confirmDialog(msg,cb,danger,confirmLabel){
   openModal('Konfirmasi','', '<p style="font-size:14px">'+esc(msg)+'</p>',null,
-    [{label:'Ya, Lanjut',cls:danger?'danger':'',onClick:function(){closeModal();cb();}},
+    [{label:esc(confirmLabel||'Konfirmasi'),cls:danger?'danger':'',onClick:function(){closeModal();cb();}},
      {label:'Batal',cls:'sec'}]);
 }
 
@@ -680,45 +965,63 @@ async function doLogin(u,p){
   var btn=$('btnLogin'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Masuk...';
   try{
     var data=await apiLogin(u,p);
-    localStorage.setItem(LS.USER,u); localStorage.setItem(LS.PASS,p);
-    S.cred={u:u,p:p}; S.me={username:data.username,nama:data.nama,role:data.role};
+    localStorage.setItem(LS.USER,u);
+    S.token=data.token; S.me={username:data.username,nama:data.nama,role:data.role};
+    saveSession(data);
     S.temuanOpts=(data.temuan_options&&data.temuan_options.length)?data.temuan_options:TEMUAN_FALLBACK;
     enterApp();
   }catch(e){ showLogin(e.message.replace('AUTH: ','')); }
   finally{ btn.disabled=false; btn.textContent='Masuk'; }
 }
-function enterApp(){
+function enterApp(skipRefresh){
   $('loginScreen').classList.add('hide'); $('appScreen').classList.remove('hide');
   $('loginErr').classList.add('hide');
   $('whoName').textContent=S.me.nama;
   $('whoRole').textContent='Role: '+S.me.role+(S.me.role==='SPB'?' (pantau)':'');
+  $('appVersion').textContent='Versi '+APP_VERSION+' — '+APP_BUILD_NOTE;
   $('tabAdmin').style.display = S.me.role==='ADMIN'?'':'none';
   document.querySelector('[data-tab="form"]').style.display = canAct()?'':'none';
   if(!canAct()&&S.tab==='form')S.tab='queue';
   if(!isAdmin()&&S.tab==='admin')S.tab='queue';
   setMode(localStorage.getItem(LS.MODE)||(window.innerWidth>=1024?'monitor':'operasi'));
-  refreshData(false);
+  if(!skipRefresh) refreshData(false);
 }
 function forceLogout(msg){
-  localStorage.removeItem(LS.USER); localStorage.removeItem(LS.PASS);
-  S.cred={u:'',p:''}; S.me=null; S.knownIds=null; S.lateSet.clear(); S.firstLoad=true;
+  var tok=S.token;
+  localStorage.removeItem(LS.USER);
+  clearSession();
+  S.token=null; S.me=null; S.knownIds=null; S.lateSet.clear(); S.firstLoad=true;
   S.tab='queue'; S.adminTab='users'; S.sumber='walkin';
   S.visits=[]; S.users=[]; S.audit=[]; S.settings={}; S.suppliers=[]; S.operators=[];
   S.fDash={date:'',vendor:'',status:''}; S.fMon={date:'',vendor:'',status:''};
+  if(tok) apiRevokeSession(tok);
   showLogin(msg||null);
 }
 
 /* ================= DATA LOAD ================= */
-async function refreshData(showSpin){
+var REFRESH_AUTO_RETRY_MAX = 2;        // percobaan otomatis tambahan (bukan termasuk percobaan pertama)
+var REFRESH_AUTO_RETRY_BASE_MS = 1500; // backoff: 1.5s, lalu 3s
+async function refreshData(showSpin,attempt,seq){
   if(!S.me) return;
+  attempt = attempt||0;
+  // PHASE 1D — REFRESH/MUTATION RACE. Beberapa hal bisa memicu refreshData()
+  // hampir bersamaan (timer periodik, visibilitychange, refresh setelah
+  // mutasi sukses). fetch() tidak menjamin urutan datang = urutan kirim,
+  // jadi respons yang lebih LAMA bisa tiba SETELAH respons yang lebih baru
+  // dan menimpanya dengan data basi. seq = nomor generasi request ini;
+  // dicatat SEBELUM fetch supaya konsisten lintas retry, dan hasil hanya
+  // diterapkan kalau tidak ada generasi lebih baru yang SUDAH diterapkan.
+  if(seq==null){ seq=++S.refreshSeq; }
   if(showSpin){ S.spinning=true; $('spinBox').innerHTML='<span class="spin"></span>'; }
   $('connDot').className='dot';
   try{
     var j=await apiGet('bootstrap',{});
+    if(seq<S.appliedSeq){ return; } // sudah ada refresh lebih baru yang diterapkan - buang respons basi ini
     var d=j.data||{};
     S.visits=d.visits||[]; S.suppliers=d.suppliers||[];
     S.settings=d.settings||{}; S.jumlahDock=Number(d.jumlah_dock)||3;
     S.lastUpdate=nowMs();
+    S.appliedSeq=seq;
     detectEvents();
     renderAll();
     $('connDot').className='dot';
@@ -726,6 +1029,14 @@ async function refreshData(showSpin){
   }catch(e){
     $('connDot').className='dot off';
     if(authFail(e.message)){ forceLogout('Sesi berakhir: '+e.message.replace('AUTH: ','')); return; }
+    // RETRY SEMANTICS: bootstrap = read-only, jadi aman diulang otomatis
+    // - tapi HANYA untuk kegagalan jaringan/timeout (lihat isRetryableError_).
+    // Error bisnis/server tidak di-auto-retry karena hasilnya deterministik.
+    if(isRetryableError_(e.message) && attempt<REFRESH_AUTO_RETRY_MAX){
+      var delay=REFRESH_AUTO_RETRY_BASE_MS*Math.pow(2,attempt);
+      setTimeout(function(){ refreshData(showSpin,attempt+1,seq); },delay); // seq sama dipertahankan - retry BUKAN request baru
+      return;
+    }
     toast('Gagal memuat data: '+e.message,'err',function(){ refreshData(true); });
   }finally{
     S.spinning=false; $('spinBox').innerHTML='';
@@ -768,7 +1079,11 @@ function scheduleRefresh(){
   if(S.refreshTimer)clearInterval(S.refreshTimer);
   var ms=S.mode==='monitor'?15000:30000;
   S.rfCount=ms/1000;
-  S.refreshTimer=setInterval(function(){ if(!document.hidden)refreshData(true); },ms);
+  // PHASE 1D — lewati tick periodik selagi ada mutasi berjalan (S.busy).
+  // Refresh eksplisit (setelah mutasi sukses, retry manual, dst.) TETAP
+  // selalu jalan - guard ini cuma mengurangi jendela race dari tick
+  // periodik yang kebetulan bersamaan dengan actTruk()/submitTruck().
+  S.refreshTimer=setInterval(function(){ if(!document.hidden&&!S.busy)refreshData(true); },ms);
 }
 function stopAllTimers(){
   ['refreshTimer','clockTimer','tickTimer','rfInt'].forEach(function(k){ if(S[k]){clearInterval(S[k]);S[k]=null;} });
@@ -802,10 +1117,16 @@ function renderAll(){
   var isMon=S.mode==='monitor';
   $('viewMonitor').classList.toggle('hide',!isMon);
   $('tabsBar').style.display=isMon?'none':'';
-  if(isMon){ renderMonitor(); return; }
-  ['queue','form','dash','admin'].forEach(function(t){
-    $('view'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('hide',S.tab!==t);
+  // PENTING: loop ini WAJIB tetap jalan walau isMon true, supaya section mode Operasi
+  // yang terakhir aktif (mis. viewDash) ikut disembunyikan. Sebelumnya ada early return
+  // di sini sebelum loop, jadi kalau user pindah ke Mode Monitor sementara masih di tab
+  // Dashboard, viewDash tidak pernah di-hide dan tampil bertumpuk dgn viewMonitor -
+  // menyebabkan kartu statistik (Total Truk, Belum/Bongkar Berjalan, Rata-rata Tunggu, dst)
+  // tampak dobel karena dua-duanya menghitung dari data yang sama.
+  ['queue','form','dash','admin','account'].forEach(function(t){
+    $('view'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('hide',isMon||S.tab!==(t==='account'?'akun':t));
   });
+  if(isMon){ renderMonitor(); return; }
   if(S.tab==='queue')renderQueue();
   if(S.tab==='dash')renderDash();
   if(S.tab==='form')renderFormHint();
@@ -815,6 +1136,65 @@ function fillVendorSelects(){
   var opts='<option value="">-- Pilih Supplier --</option>'+S.suppliers.map(function(v){return '<option>'+esc(v)+'</option>';}).join('');
   var key=S.suppliers.join('\u0001');
   if(S._supKey!==key){ S._supKey=key; var e=$('fVendor'); if(e)e.innerHTML=opts; }
+}
+
+/* ================= DIFF RENDER HELPERS (PHASE 1E — optimisasi rendering) =================
+   Sebelumnya renderQueue()/renderMonitor() membangun ulang SELURUH innerHTML kolom antrean/
+   kanban tiap siklus refresh (15-30 detik), walau biasanya cuma 1-2 truk yang statusnya
+   berubah. Akibatnya: reflow penuh, animasi/transisi ke-reset, dan kerja sia-sia membangun
+   ulang string HTML utk kartu yang isinya sama persis.
+   patchList() hanya membangun ulang node utk item yang "tanda"-nya (sigFn) berubah dibanding
+   render sebelumnya; sisanya dipindah apa adanya - memperluas pola yang sudah dipakai
+   tickRunning() (update angka durasi tanpa render ulang kartu) ke seluruh siklus render. */
+function emptyHtml(msg){
+  return '<div class="empty">'+ic('package')+'<span>'+esc(msg)+'</span></div>';
+}
+function patchList(container, items, keyFn, sigFn, renderFn){
+  var existing={};
+  Array.prototype.slice.call(container.children).forEach(function(el){ // snapshot - children live, jangan iterasi langsung sambil remove()
+    var k=el.getAttribute('data-pid');
+    if(k!=null)existing[k]=el; else el.remove(); // buang node lama tak terlacak (mis. placeholder ".empty")
+  });
+  var frag=document.createDocumentFragment();
+  items.forEach(function(item){
+    var key=String(keyFn(item)), sig=sigFn(item), el=existing[key];
+    if(el){
+      delete existing[key];
+      if(el.getAttribute('data-psig')!==sig){
+        var tmp=document.createElement('div'); tmp.innerHTML=renderFn(item);
+        var fresh=tmp.firstElementChild;
+        fresh.setAttribute('data-pid',key); fresh.setAttribute('data-psig',sig);
+        el.replaceWith(fresh); el=fresh;
+      }
+    }else{
+      var tmp2=document.createElement('div'); tmp2.innerHTML=renderFn(item);
+      el=tmp2.firstElementChild;
+      el.setAttribute('data-pid',key); el.setAttribute('data-psig',sig);
+    }
+    frag.appendChild(el);
+  });
+  Object.keys(existing).forEach(function(k){ existing[k].remove(); });
+  container.appendChild(frag);
+}
+/** Tanda per-kartu truk: kalau sama dengan render sebelumnya, kartu TIDAK dibangun ulang.
+ *  Status/dock/operator/dll cukup dibandingkan apa adanya. Untuk 'Tiba' & 'Dijadwalkan',
+ *  tampilannya punya ambang batas berbasis waktu berjalan (highlight telat) yang tidak
+ *  di-update tickRunning(), jadi ditambah bucket menit supaya tetap ikut diperiksa ulang
+ *  tiap ±1 menit - status lain (Sedang Bongkar/Selesai/Dibatalkan) di-cache sampai datanya
+ *  benar-benar berubah. */
+function visitSig(v){
+  var base=[v.status,v.dock,v.break_start,v.break_end,v.operator_tiba,v.operator_bongkar,
+    v.temuan,v.qty,v.satuan,v.plan_tiba,v.aktual_tiba,v.mulai_bongkar,
+    canAct()?1:0,isAdmin()?1:0].join('|');
+  if(v.status==='Dijadwalkan'||v.status==='Tiba') base+='|m'+Math.floor(nowMs()/60000);
+  return base;
+}
+/** Tanda ringan atas seluruh daftar visit, dipakai utk melewati agregasi/DOM-write
+ *  (statCards/tableHtml/renderTrend) kalau datanya identik dengan render terakhir. */
+function listSig(list){
+  return list.length+'|'+list.map(function(v){
+    return v.kode_kedatangan+':'+v.status+':'+v.dock+':'+v.durasi_tunggu_menit+':'+v.durasi_bongkar_menit+':'+v.break_start+':'+v.break_end;
+  }).join(',');
 }
 
 /* ================= QUEUE (OPERASI) ================= */
@@ -893,6 +1273,22 @@ function cardHtml(v){
     (acts?'<div class="acts">'+acts+'</div>':'')+
     '</div>';
 }
+var QUEUE_COLS=[
+  {t:'Dijadwalkan',ico:'calendar',empty:'<b>Tidak ada jadwal</b><span>Belum ada truk yang dijadwalkan hari ini.</span>'},{t:'Tiba',ico:'truck',empty:'<b>Belum ada truk tiba</b><span>Antrean kedatangan masih kosong.</span>'},
+  {t:'Sedang Bongkar',ico:'activity',empty:'<b>Tidak ada proses bongkar</b><span>Belum ada truk yang sedang dibongkar.</span>'},{t:'Selesai',ico:'check-c',empty:'<b>Belum ada yang selesai</b><span>Belum ada proses bongkar yang selesai hari ini.</span>'}
+];
+/** Bangun/ambil elemen skeleton tetap utk satu kolom antrean (dipanggil sekali per
+ *  kolom per sesi) - header + wadah .qgrid yang isinya nanti dipatch oleh patchList,
+ *  supaya renderQueue tidak perlu innerHTML= ulang struktur kolom tiap tick. */
+function ensureQueueCol(container,key,ico,label){
+  var sec=container.querySelector('[data-col="'+key+'"]');
+  if(!sec){
+    sec=document.createElement('div'); sec.className='qsec'; sec.setAttribute('data-col',key);
+    sec.innerHTML='<div class="col-h">'+ic(ico)+' '+label+' <span class="n">0</span></div><div class="qgrid"></div>';
+    container.appendChild(sec);
+  }
+  return sec;
+}
 function renderQueue(){
   if(S.firstLoad&&!S.visits.length){
     var sk=''; for(var q=0;q<3;q++)sk+='<div class="skel"></div>';
@@ -900,35 +1296,51 @@ function renderQueue(){
     $('queueCols').innerHTML=colHtml;
     return;
   }
+  // Kalau kolom masih dalam bentuk skeleton (dari cabang di atas) atau belum pernah
+  // dibangun sama sekali, mulai dari kosong dulu supaya ensureQueueCol membangun struktur baru.
+  var root=$('queueCols');
+  if(!root.querySelector('[data-col]')) root.innerHTML='';
+
   var tv=todayVisits();
-  var cols=[
-    {t:'Dijadwalkan',ico:'calendar'},{t:'Tiba',ico:'truck'},
-    {t:'Sedang Bongkar',ico:'activity'},{t:'Selesai',ico:'check-c'}
-  ];
-  var html=cols.map(function(c){
+  QUEUE_COLS.forEach(function(c){
     var arr=tv.filter(function(v){return v.status===c.t;})
       .sort(function(a,b){return (a.dock||99)-(b.dock||99)||String(a.aktual_tiba||a.plan_tiba||'').localeCompare(String(b.aktual_tiba||b.plan_tiba||''));});
-    return '<div class="qsec"><div class="col-h">'+ic(c.ico)+' '+c.t+' <span class="n">'+arr.length+'</span></div>'+
-      '<div class="qgrid">'+(arr.map(cardHtml).join('')||'<div class="empty">Kosong</div>')+'</div></div>';
-  }).join('');
+    var sec=ensureQueueCol(root,c.t,c.ico,c.t);
+    sec.querySelector('.col-h .n').textContent=arr.length;
+    var grid=sec.querySelector('.qgrid');
+    if(!arr.length){ grid.innerHTML=emptyHtml(c.empty); }
+    else patchList(grid,arr,function(v){return v.kode_kedatangan;},visitSig,cardHtml);
+  });
+
   var canc=tv.filter(function(v){return v.status==='Dibatalkan';});
-  if(canc.length)html+='<div class="qsec"><div class="col-h">'+ic('ban')+' Dibatalkan <span class="n">'+canc.length+'</span></div><div class="qgrid">'+canc.map(cardHtml).join('')+'</div></div>';
-  $('queueCols').innerHTML=html;
+  var cancSec=root.querySelector('[data-col="Dibatalkan"]');
+  if(canc.length){
+    cancSec=ensureQueueCol(root,'Dibatalkan','ban','Dibatalkan');
+    cancSec.querySelector('.col-h .n').textContent=canc.length;
+    patchList(cancSec.querySelector('.qgrid'),canc,function(v){return v.kode_kedatangan;},visitSig,cardHtml);
+  }else if(cancSec){
+    cancSec.remove(); // tidak ada truk dibatalkan lagi - hapus seksinya
+  }
 }
 
 /* ================= AKSI TRUCK ================= */
-async function actTruk(act,id,extra){
+async function actTruk(act,id,extra,reqId){
   if(S.busy){toast('Masih ada proses berjalan, tunggu sebentar...','');return;}
   S.busy=true;
+  // RETRY SEMANTICS (aksi tulis): TIDAK di-auto-retry seperti refreshData().
+  // Aksi ini mengubah state fisik (status truk, dst.) - retry harus
+  // sepengetahuan operator (tombol retry di toast), bukan otomatis diam-diam.
+  // Aman diulang berkali-kali karena reqId dipertahankan sama lintas retry
+  if(!reqId)reqId=genRequestId();
   try{
     var payload={kode_kedatangan:id};
     if(extra)Object.keys(extra).forEach(function(k){payload[k]=extra[k];});
-    await apiPost(act,payload);
+    await apiPost(act,payload,reqId);
     toast('Berhasil: '+act,'ok');
     await refreshData(true);
   }catch(e){
     if(authFail(e.message)){forceLogout(e.message.replace('AUTH: ',''));return;}
-    toast(e.message,'err',function(){actTruk(act,id,extra);});
+    toast(e.message,'err',function(){actTruk(act,id,extra,reqId);});
   }finally{S.busy=false;}
 }
 function findVisit(id){ 
@@ -1051,16 +1463,90 @@ function tableHtml(list){
   if(!list.length)return TABLE_HEAD+'<tbody><tr><td colspan="17" style="text-align:center;color:var(--muted);padding:20px">Tidak ada data</td></tr></tbody>';
   return TABLE_HEAD+'<tbody>'+list.map(rowForTable).join('')+'</tbody>';
 }
+
+function mobileVisitCard(v){
+  var status=v.status||'-';
+  var cls=ST_CLS[status]||'';
+  var time=status==='Tiba'&&v.aktual_tiba?fmtHM(v.aktual_tiba):(status==='Sedang Bongkar'&&v.mulai_bongkar?fmtHM(v.mulai_bongkar):fmtHM(v.plan_tiba));
+  var timingLabel=status==='Tiba'?'Tiba':status==='Sedang Bongkar'?'Mulai':'Plan';
+  var dur=v.durasi_tunggu_menit!=null?(v.durasi_tunggu_menit+' mnt'):'-';
+  return '<article class="mobile-visit"><div class="mobile-visit-head"><div><div class="mobile-visit-plate">'+esc(v.no_polisi||'-')+'</div><div class="mobile-visit-supplier">'+esc(v.vendor||'-')+'</div></div><span class="badge '+cls+'">'+esc(status)+'</span></div><div class="mobile-visit-meta"><div class="mobile-meta-item"><span class="mobile-meta-label">'+timingLabel+'</span><span class="mobile-meta-value">'+esc(time||'-')+'</span></div><div class="mobile-meta-item"><span class="mobile-meta-label">Dock</span><span class="mobile-meta-value">'+esc(v.dock||'-')+'</span></div><div class="mobile-meta-item"><span class="mobile-meta-label">Qty</span><span class="mobile-meta-value">'+esc(v.qty!=null?(v.qty+' '+(v.satuan||'')):'-')+'</span></div><div class="mobile-meta-item"><span class="mobile-meta-label">Tunggu</span><span class="mobile-meta-value">'+esc(dur)+'</span></div></div>'+(v.temuan?'<div class="mobile-visit-note">Temuan: '+esc(v.temuan)+'</div>':'')+'</article>';
+}
+function mobileListHtml(list){
+  if(!list.length)return '<div class="mobile-empty">Tidak ada truk yang sesuai dengan filter saat ini.</div>';
+  return list.slice(0,300).map(mobileVisitCard).join('');
+}
+function syncFilterReset(btnId,f){
+  var b=$(btnId); if(!b)return;
+  var active=!!(f.date&&f.date!==todayJak())||!!f.vendor||!!f.status;
+  b.classList.toggle('hide',!active);
+}
+
+function renderOperationalAlerts(){
+  var body=$('opsAlertBody'),countEl=$('opsAlertCount'),hint=$('opsAlertHint');
+  if(!body||!countEl)return;
+  var tv=todayVisits(), now=nowMs();
+  var parah=Number(S.settings['threshold_telat_parah_menit'])||60;
+  var normal=Number(S.settings['threshold_tepat_waktu_menit'])||15;
+  var alerts=[];
+  var late=tv.filter(function(v){
+    return v.status==='Tiba'&&minsSince(v.aktual_tiba,now)!=null&&minsSince(v.aktual_tiba,now)>=parah;
+  }).sort(function(a,b){return minsSince(b.aktual_tiba,now)-minsSince(a.aktual_tiba,now);});
+  if(late.length){
+    var top=late[0], mins=minsSince(top.aktual_tiba,now);
+    alerts.push({type:'bad',ico:'alert',title:late.length+' truk menunggu lama',desc:esc(top.no_polisi||top.kode_kedatangan||'Truk')+' sudah menunggu '+esc(durStr(mins))+(late.length>1?' dan '+(late.length-1)+' lainnya.':'')});
+  }
+  var active=tv.filter(function(v){return v.status==='Sedang Bongkar';});
+  if(S.jumlahDock>0&&active.length>=S.jumlahDock){
+    alerts.push({type:'warn',ico:'factory',title:'Kapasitas dock penuh',desc:active.length+'/'+S.jumlahDock+' dock sedang digunakan.'});
+  }
+  var overdueSched=tv.filter(function(v){
+    return v.status==='Dijadwalkan'&&v.plan_tiba&&nowMsOf(v.plan_tiba)!=null&&nowMsOf(v.plan_tiba)<now;
+  });
+  if(overdueSched.length){
+    alerts.push({type:'warn',ico:'calendar',title:overdueSched.length+' jadwal belum tiba',desc:'Ada jadwal yang sudah melewati rencana tiba tetapi masih berstatus Dijadwalkan.'});
+  }
+  var waiting=tv.filter(function(v){return v.status==='Tiba'&&minsSince(v.aktual_tiba,now)!=null&&minsSince(v.aktual_tiba,now)>normal;});
+  if(!late.length&&waiting.length){
+    alerts.push({type:'warn',ico:'clock',title:waiting.length+' truk melewati batas normal',desc:'Waktu tunggu sudah di atas '+normal+' menit.'});
+  }
+  if(!alerts.length){
+    body.innerHTML='<div class="ops-alert-empty"><svg class="ic" aria-hidden="true"><use href="#i-check-c"/></svg><span><b>Operasional normal.</b> Tidak ada exception yang perlu ditindaklanjuti saat ini.</span></div>';
+    countEl.textContent='0'; countEl.style.background='var(--ok)';
+    hint.textContent='Tidak ada exception';
+    return;
+  }
+  countEl.textContent=String(alerts.length); countEl.style.background='var(--bad)';
+  hint.textContent='Perlu perhatian';
+  body.innerHTML=alerts.map(function(a){
+    return '<div class="ops-alert-item '+a.type+'"><svg class="ic" aria-hidden="true"><use href="#i-'+a.ico+'"/></svg><div class="oa-main"><div class="oa-title">'+a.title+'</div><div class="oa-desc">'+a.desc+'</div></div></div>';
+  }).join('');
+}
+
 function renderDash(){
-  renderTrend(S.visits);
+  renderOperationalAlerts();
+  var trendSig=listSig(S.visits)+'|'+todayJak();
+  if(S._trendSig!==trendSig){ S._trendSig=trendSig; renderTrend(S.visits); }
+
   var f=S.fDash=readFilters('dDate','dVendor','dStatus');
   var isDefault=(!f.date||f.date===todayJak())&&!f.vendor&&!f.status;
   var list=isDefault?todayVisits():applyFilters(S.visits,f);
   S.dashList=list;
+
+  // PHASE 1E — kalau daftar terfilter + ambang setting persis sama dgn render dashboard
+  // sebelumnya, lewati computeStats/statCards/tableHtml dan penulisan DOM sama sekali.
+  var dashSig=listSig(list)+'|'+f.date+'|'+f.vendor+'|'+f.status+'|'+S.jumlahDock+
+    '|'+S.settings['threshold_tepat_waktu_menit']+'|'+S.settings['threshold_telat_parah_menit'];
+  if(S._dashSig===dashSig) return;
+  S._dashSig=dashSig;
+
   var cards=statCards(computeStats(list));
   if(!isDefault)cards[0].l='Total Truk Terfilter';
   $('dashStats').innerHTML=statsHtml(cards);
-  $('dashTbl').innerHTML=tableHtml(list.slice().sort(byCreated));
+  var dashSorted=list.slice().sort(byCreated);
+  $('dashTbl').innerHTML=tableHtml(dashSorted);
+  $('dashMobileList').innerHTML=mobileListHtml(dashSorted);
+  syncFilterReset('btnResetDash',f);
 }
 function renderTrend(src){
   var el=$('trendChart'); if(!el)return;
@@ -1085,11 +1571,16 @@ function renderTrend(src){
   var max=1; days.forEach(function(x){ if(cnt[x.k]>max)max=cnt[x.k]; });
   el.innerHTML=days.map(function(x){
     var c=cnt[x.k], avg=n[x.k]?Math.round(sum[x.k]/n[x.k]):null;
-    return '<div class="bar-w" title="'+x.l+': '+c+' truk selesai'+(avg?' &middot; rata-rata bongkar '+durStr(avg):'')+'">'+
-      '<span class="bar-v">'+c+'</span>'+
+    return '<div class="bar-w" data-k="'+x.k+'" onclick="drillTrendDay(this)" title="'+x.l+': '+c+' truk selesai'+(avg?' &middot; rata-rata bongkar '+durStr(avg):'')+' — klik untuk lihat detail"><span class="bar-v">'+c+'</span>'+
       '<div class="bar" style="height:'+Math.max(3,Math.round(c/max*100))+'%"></div>'+
       '<span class="bar-l">'+x.l+'</span></div>';
   }).join('');
+}
+function drillTrendDay(el){
+  var k=el.getAttribute('data-k'); if(!k)return;
+  $('dDate').value=k; $('dVendor').value=''; $('dStatus').value='Selesai';
+  renderDash();
+  var tbl=$('dashTbl'); if(tbl&&tbl.scrollIntoView)tbl.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function readFilters(dId,vId,sId){
   return {date:$(dId).value.trim(),vendor:$(vId).value.trim(),status:$(sId).value};
@@ -1128,30 +1619,39 @@ function setSumber(v){
  * Validasi form truck sebelum submit.
  * @returns {boolean} true jika valid
  */
+function clearFieldError(id){
+  var el=$(id),err=$(id+'Err');
+  if(el){el.classList.remove('field-invalid');el.setAttribute('aria-invalid','false');}
+  if(err){err.textContent='';err.classList.remove('show');err.removeAttribute('role');}
+}
+function setFieldError(id,msg){
+  var el=$(id),err=$(id+'Err');
+  if(el){el.classList.add('field-invalid');el.setAttribute('aria-invalid','true');}
+  if(err){err.textContent=msg;err.classList.add('show');err.setAttribute('role','alert');}
+  if(el) el.focus();
+  toast(msg,'err');
+}
+function clearTruckFormErrors(){['fVendor','fPol','fSupir','fJenis','fPlan'].forEach(clearFieldError);}
 function validateTruckForm(){
+  clearTruckFormErrors();
   var vendor=$('fVendor').value.trim();
   var pol=$('fPol').value.trim().toUpperCase();
-  // Validasi supplier
-  if(!vendor){$('fVendor').focus();toast('Pilih supplier dulu','err');return false;}
-  // Validasi no polisi (opsional). Jika diisi: huruf/angka/spasi, minimal 3 char.
+  if(!vendor){setFieldError('fVendor','Supplier wajib dipilih.');return false;}
   var platePattern = /^[A-Z0-9\s]{3,}$/;
-  if(pol && !platePattern.test(pol)){$('fPol').focus();toast('Format no. polisi tidak valid','err');return false;}
-  // Validasi nama supir (opsional tapi jika diisi harus huruf/ruang)
+  if(pol && !platePattern.test(pol)){setFieldError('fPol','Format nomor polisi tidak valid.');return false;}
   var supir=$('fSupir').value.trim();
-  if(supir && !/^[A-Za-z\s]+$/.test(supir)){$('fSupir').focus();toast('Format nama supir tidak valid','err');return false;}
-  // Validasi jenis transaksi
+  if(supir && !/^[A-Za-z\s]+$/.test(supir)){setFieldError('fSupir','Nama supir hanya boleh berisi huruf dan spasi.');return false;}
   var jenis=$('fJenis').value;
-  if(!jenis){$('fJenis').focus();toast('Pilih jenis transaksi','err');return false;}
-  // Validasi rencana tiba (jika jadwal)
-  if(S.sumber==='jadwal'){
-    if(!$('fPlan').value){$('fPlan').focus();toast('Isi rencana tiba','err');return false;}
-  }
+  if(!jenis){setFieldError('fJenis','Jenis transaksi wajib dipilih.');return false;}
+  if(S.sumber==='jadwal'&&!$('fPlan').value){setFieldError('fPlan','Rencana tiba wajib diisi untuk jadwal.');return false;}
   return true;
 }
 
-async function submitTruck(){
+async function submitTruck(reqId){
   if(S.busy)return;
   if(!validateTruckForm())return;
+  // reqId sama dipakai lintas retry - lihat komentar di actTruk().
+  if(!reqId)reqId=genRequestId();
   var vendor=$('fVendor').value,pol=$('fPol').value.trim().toUpperCase();
   var payload={vendor:vendor,no_polisi:pol,nama_supir:$('fSupir').value.trim(),no_po:$('fSJ').value.trim(),jenis_transaksi:$('fJenis').value,catatan:$('fCatatan').value.trim()};
   var btn=$('btnSubmitTruck');
@@ -1160,9 +1660,9 @@ async function submitTruck(){
     if(S.sumber==='jadwal'){
       if(!$('fPlan').value){toast('Isi rencana tiba','err');return;}
       payload.plan_tiba=new Date($('fPlan').value).toISOString();
-      await apiPost('createSchedule',payload);
+      await apiPost('createSchedule',payload,reqId);
     }else{
-      await apiPost('createWalkin',payload);
+      await apiPost('createWalkin',payload,reqId);
     }
     ['fPol','fSupir','fSJ','fCatatan'].forEach(function(id){$(id).value='';});
     toast('Truk tersimpan','ok');
@@ -1170,7 +1670,7 @@ async function submitTruck(){
     await refreshData(true);
   }catch(e){
     if(authFail(e.message)){forceLogout(e.message.replace('AUTH: ',''));return;}
-    toast(e.message,'err',function(){submitTruck();});
+    toast(e.message,'err',function(){submitTruck(reqId);});
   }finally{S.busy=false;btn.disabled=false;}
 }
 
@@ -1192,11 +1692,10 @@ async function loadUsers(){
   try{
     var j=await apiGet('users',{});
     S.users=j.data||[];
-    var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h2>Akun Login</h2><button class="btn small" id="btnAddUser">'+ic('plus')+' Tambah User</button></div>';
+    var html='<div class="admin-actions"><h2>Akun Login</h2><button class="btn small" id="btnAddUser">'+ic('plus')+' Tambah Pengguna</button></div>';
     S.users.forEach(function(u){
-      html+='<div class="list-row"><div class="grow"><b>'+esc(u.username)+'</b> — '+esc(u.nama)+' <span class="pill b">'+esc(u.role)+'</span></div>'+
-        '<span class="pill '+(u.aktif?'g':'r')+'">'+(u.aktif?'aktif':'nonaktif')+'</span>'+
-        '<button class="btn small sec" data-uact="reset" data-uname="'+esc(u.username)+'">'+ic('key')+' Reset</button>'+
+      html+='<div class="admin-item"><div class="admin-main"><b>'+esc(u.nama)+'</b><div class="admin-meta"><span class="hint">@'+esc(u.username)+'</span><span class="pill b">'+esc(u.role)+'</span><span class="pill '+(u.aktif?'g':'r')+'">'+(u.aktif?'aktif':'nonaktif')+'</span></div></div>'+
+        '<button class="btn small sec" data-uact="reset" data-uname="'+esc(u.username)+'" aria-label="Reset password '+esc(u.username)+'">'+ic('key')+' Reset</button>'+
         '<button class="btn small '+(u.aktif?'danger':'')+'" data-uact="toggle" data-uname="'+esc(u.username)+'" data-cur="'+(u.aktif?'1':'0')+'">'+(u.aktif?'Nonaktifkan':'Aktifkan')+'</button></div>';
     });
     $('adminBody').innerHTML=html;
@@ -1208,7 +1707,7 @@ async function loadUsers(){
         else confirmDialog((b.getAttribute('data-cur')==='1'?'Nonaktifkan':'Aktifkan')+' akun '+un+'?',async function(){
           try{await apiPost('setUserAktif',{username:un,aktif:b.getAttribute('data-cur')!=='1'});toast('OK','ok');loadUsers();}
           catch(e){toast(e.message,'err');}
-        },true);
+        },true,(b.getAttribute('data-cur')==='1'?'Nonaktifkan':'Aktifkan'));
       };
     });
   }catch(e){$('adminBody').innerHTML='<p class="hint">Gagal: '+esc(e.message)+'</p>';}
@@ -1240,12 +1739,12 @@ async function renderOperators(body){
     var j=await apiGet('operatorsAll',{});
     list=j.data||[];
   }catch(e){ body.innerHTML='<p class="hint">Gagal memuat operator: '+esc(e.message)+'</p>'; return; }
-  var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><h2>Operator Forklift</h2><button class="btn small" id="btnAddOp">'+ic('plus')+' Tambah</button></div>';
+  var html='<div class="admin-actions"><h2>Operator Forklift</h2><button class="btn small" id="btnAddOp">'+ic('plus')+' Tambah Operator</button></div>';
   list.forEach(function(o){
     var nm=typeof o==='string'?o:o.nama_operator;
     var aktif=typeof o==='string'?true:!!o.aktif;
-    html+='<div class="list-row"><span class="grow">'+esc(nm)+'</span><span class="pill '+(aktif?'g':'r')+'">'+(aktif?'aktif':'nonaktif')+'</span>'+
-      '<button class="btn small sec" data-op="'+esc(nm)+'" data-cur="'+(aktif?'1':'0')+'">'+(aktif?'Nonaktifkan':'Aktifkan')+'</button></div>';
+    html+='<div class="admin-item"><div class="admin-main"><b>'+esc(nm)+'</b><div class="admin-meta"><span class="pill '+(aktif?'g':'r')+'">'+(aktif?'aktif':'nonaktif')+'</span></div></div>'+
+      '<button class="btn small '+(aktif?'danger':'')+'" data-op="'+esc(nm)+'" data-cur="'+(aktif?'1':'0')+'">'+(aktif?'Nonaktifkan':'Aktifkan')+'</button></div>';
   });
   if(!list.length)html+='<p class="hint">Belum ada operator.</p>';
   body.innerHTML=html;
@@ -1262,7 +1761,7 @@ async function renderOperators(body){
       confirmDialog((cur?'Nonaktifkan':'Aktifkan')+' operator '+b.getAttribute('data-op')+'?',async function(){
         try{await apiPost('setOperatorAktif',{nama_operator:b.getAttribute('data-op'),aktif:!cur});toast('OK','ok');renderAdminTab('operators');refreshData(false);}
         catch(e){toast(e.message,'err');}
-      },cur);
+      },cur,(cur?'Nonaktifkan':'Aktifkan'));
     };
   });
 }
@@ -1297,35 +1796,67 @@ async function loadAudit(){
 }
 
 /* ================= MONITOR DESKTOP ================= */
+var MONITOR_COLS=[{t:'Dijadwalkan',ico:'calendar'},{t:'Tiba',ico:'truck'},{t:'Sedang Bongkar',ico:'activity'},{t:'Selesai',ico:'check-c'}];
+function kcardHtml(c,parah){
+  return function(v){
+    var cls=c.t==='Tiba'?'c1':c.t==='Sedang Bongkar'?'c2':'c3';
+    var t='',hot=false;
+    if(c.t==='Tiba'&&v.aktual_tiba){var w=minsSince(v.aktual_tiba,nowMs());t='Menunggu '+durStr(w);if(w>=parah)hot=true;}
+    else if(c.t==='Sedang Bongkar'&&v.mulai_bongkar){t='Bongkar '+durStr(runningBongkarMin(v));}
+    else if(c.t==='Dijadwalkan'&&v.plan_tiba){var df=Math.round((nowMsOf(v.plan_tiba)-nowMs())/60000);t=df>0?('Plan '+durStr(df)+' lagi'):('Telat '+durStr(-df));if(df<-30){hot=true;}}
+    else if(c.t==='Selesai'){t='T'+durStr(v.durasi_tunggu_menit)+' B'+durStr(v.durasi_bongkar_menit);}
+    var tpre=(c.t==='Tiba'&&hot)?ic('alert')+' ':'';
+    var tsuf=(c.t==='Sedang Bongkar'&&v.break_start&&!v.break_end)?' '+ic('coffee'):'';
+    return '<div class="kcard '+cls+(hot?' late':'')+'"><div class="p">'+esc(v.no_polisi||'-')+(v.dock?' <small style="color:var(--work)">D'+v.dock+'</small>':'')+'</div>'+
+      '<div class="s">'+esc(v.vendor||'')+'</div><div class="t'+(hot?' hot':'')+'">'+tpre+esc(t)+tsuf+'</div>'+
+      '<div class="ops">'+esc((v.operator_tiba?'T:'+v.operator_tiba:'')+(v.operator_bongkar?(v.operator_tiba?' · ':'')+'B:'+v.operator_bongkar:''))+'</div></div>';
+  };
+}
+function ensureMonCol(container,key,ico,label){
+  var col=container.querySelector('[data-col="'+key+'"]');
+  if(!col){
+    col=document.createElement('div'); col.className='kcol'; col.setAttribute('data-col',key);
+    col.innerHTML='<div class="kh"><span>'+ic(ico)+' '+label+'</span><span data-cnt>0</span></div><div class="kgrid"></div>';
+    container.appendChild(col);
+  }
+  return col;
+}
 function renderMonitor(){
   var tv=todayVisits();
-  var st=computeStats(tv);
-  $('monStats').innerHTML=statsHtml(statCards(st));
-  var cols=[{t:'Dijadwalkan',ico:'calendar'},{t:'Tiba',ico:'truck'},{t:'Sedang Bongkar',ico:'activity'},{t:'Selesai',ico:'check-c'}];
+  var tvSig=listSig(tv);
   var parah=Number(S.settings['threshold_telat_parah_menit'])||60;
-  $('kanban').innerHTML=cols.map(function(c){
+
+  // Kanban: selalu dipatch per-kartu (murah - lihat patchList), highlight telat pada kartu
+  // 'Tiba'/'Dijadwalkan' tetap ikut diperiksa ulang tiap menit lewat bucket waktu di visitSig().
+  var kanban=$('kanban');
+  if(!kanban.querySelector('[data-col]')) kanban.innerHTML='';
+  MONITOR_COLS.forEach(function(c){
     var arr=tv.filter(function(v){return v.status===c.t;}).sort(function(a,b){return (a.dock||99)-(b.dock||99);});
-    var cards=arr.map(function(v){
-        var cls=c.t==='Tiba'?'c1':c.t==='Sedang Bongkar'?'c2':'c3';
-        var t='',hot=false;
-        if(c.t==='Tiba'&&v.aktual_tiba){var w=minsSince(v.aktual_tiba,nowMs());t='Menunggu '+durStr(w);if(w>=parah)hot=true;}
-        else if(c.t==='Sedang Bongkar'&&v.mulai_bongkar){t='Bongkar '+durStr(runningBongkarMin(v));}
-        else if(c.t==='Dijadwalkan'&&v.plan_tiba){var df=Math.round((nowMsOf(v.plan_tiba)-nowMs())/60000);t=df>0?('Plan '+durStr(df)+' lagi'):('Telat '+durStr(-df));if(df<-30){hot=true;}}
-        else if(c.t==='Selesai'){t='T'+durStr(v.durasi_tunggu_menit)+' B'+durStr(v.durasi_bongkar_menit);}
-        var tpre=(c.t==='Tiba'&&hot)?ic('alert')+' ':'';
-        var tsuf=(c.t==='Sedang Bongkar'&&v.break_start&&!v.break_end)?' '+ic('coffee'):'';
-        return '<div class="kcard '+cls+(hot?' late':'')+'"><div class="p">'+esc(v.no_polisi||'-')+(v.dock?' <small style="color:var(--work)">D'+v.dock+'</small>':'')+'</div>'+
-          '<div class="s">'+esc(v.vendor||'')+'</div><div class="t'+(hot?' hot':'')+'">'+tpre+esc(t)+tsuf+'</div>'+
-          '<div class="ops">'+esc((v.operator_tiba?'T:'+v.operator_tiba:'')+(v.operator_bongkar?(v.operator_tiba?' · ':'')+'B:'+v.operator_bongkar:''))+'</div></div>';
-      }).join('');
-    return '<div class="kcol"><div class="kh"><span>'+ic(c.ico)+' '+c.t+'</span><span>'+arr.length+'</span></div>'+
-      (cards||'<div class="empty">Kosong</div>')+'</div>';
-  }).join('');
+    var col=ensureMonCol(kanban,c.t,c.ico,c.t);
+    col.querySelector('.kh [data-cnt]').textContent=arr.length;
+    var grid=col.querySelector('.kgrid');
+    if(!arr.length){ grid.innerHTML=emptyHtml('Kosong'); }
+    else patchList(grid,arr,function(v){return v.kode_kedatangan;},function(v){return visitSig(v)+'|hot'+parah;},kcardHtml(c,parah));
+  });
+
+  // Stats & tabel: lewati rebuild+DOM-write kalau data hari ini persis sama dgn render terakhir.
+  if(S._monStatSig!==tvSig+'|'+parah){
+    S._monStatSig=tvSig+'|'+parah;
+    $('monStats').innerHTML=statsHtml(statCards(computeStats(tv)));
+  }
+
   var f=S.fMon=readFilters('mDate','mVendor','mStatus');
   var isDefault=(!f.date||f.date===todayJak())&&!f.vendor&&!f.status;
-  var list=isDefault?todayVisits():applyFilters(S.visits,f);
+  var list=isDefault?tv:applyFilters(S.visits,f);
   S.monList=list;
-  $('monTbl').innerHTML=tableHtml(list.slice().sort(byCreated).slice(0,300));
+  var monTblSig=listSig(list)+'|'+f.date+'|'+f.vendor+'|'+f.status;
+  if(S._monTblSig!==monTblSig){
+    S._monTblSig=monTblSig;
+    var monSorted=list.slice().sort(byCreated).slice(0,300);
+    $('monTbl').innerHTML=tableHtml(monSorted);
+    $('monMobileList').innerHTML=mobileListHtml(monSorted);
+    syncFilterReset('btnResetMon',f);
+  }
   $('lastUpd').textContent=jktTime(S.lastUpdate||nowMs());
 }
 
@@ -1333,7 +1864,7 @@ function renderMonitor(){
 function setMode(m){
   S.mode=m; localStorage.setItem(LS.MODE,m);
   document.body.setAttribute('data-mode',m);
-  if(m==='monitor'){ applyTheme('dark'); } else { applyTheme(themePref()); }
+  applyTheme(themePref()); // PHASE 1E fix - dulu Mode Monitor dipaksa gelap terlepas dari preferensi user
   $('btnMode').innerHTML = m==='monitor' ? ic('phone')+' Operasi' : ic('monitor')+' Monitor';
   $('btnFs').style.display=m==='monitor'?'':'none';
   if(S.me){startTimers();renderAll();}
@@ -1355,7 +1886,7 @@ function bindStatic(){
     if(url)localStorage.setItem(LS.URL,url.replace(/\/+$/,''));
     doLogin(u,p);
   });
-  $('btnOut').onclick=function(){confirmDialog('Keluar dari aplikasi?',function(){forceLogout('Anda telah keluar.');},true);};
+  $('btnOut').onclick=function(){confirmDialog('Keluar dari aplikasi?',function(){forceLogout('Anda telah keluar.');},true,'Keluar');};
   $('btnRefreshTop').onclick=function(){refreshData(true);};
   $('btnFs').onclick=function(){
     if(document.fullscreenElement)document.exitFullscreen();
@@ -1365,7 +1896,7 @@ function bindStatic(){
   $('btnTheme').onclick=function(){
     var t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
     localStorage.setItem(THEME_KEY,t);
-    if(S.mode!=='monitor') applyTheme(t); else applyTheme('dark');
+    applyTheme(t); // PHASE 1E fix - dulu di Mode Monitor selalu dipaksa balik ke dark, tombol kelihatan aktif tapi tidak ngefek
   };
   $('btnKey').onclick=function(){
     openModal('Ganti Password',S.me?S.me.nama:'',
@@ -1392,7 +1923,7 @@ function bindStatic(){
     else if(act==='selesai')modalSelesai(v);
     else if(act==='jeda')confirmDialog('Catat mulai istirahat?',function(){actTruk('pauseBreak',id);});
     else if(act==='lanjut')confirmDialog('Lanjut kerja (akhiri istirahat)?',function(){actTruk('resumeBreak',id);});
-    else if(act==='batal')confirmDialog('Batalkan jadwal truk ini?',function(){actTruk('cancel',id);},true);
+    else if(act==='batal')confirmDialog('Batalkan jadwal truk ini?',function(){actTruk('cancel',id);},true,'Batalkan Jadwal');
     else if(act==='edit')modalEdit(v);
   });
 
@@ -1403,6 +1934,7 @@ function bindStatic(){
       renderDash();
     });
   });
+  $('btnResetDash').onclick=function(){ $('dDate').value=todayJak(); $('dVendor').value=''; $('dStatus').value=''; S.fDash={date:todayJak(),vendor:'',status:''}; renderDash(); };
   $('btnCsv').onclick=function(){
     csvExport(S.dashList||applyFilters(S.visits,S.fDash),'unloading_'+(S.fDash.date||todayJak())+'.csv');
   };
@@ -1413,6 +1945,7 @@ function bindStatic(){
       renderMonitor();
     });
   });
+  $('btnResetMon').onclick=function(){ $('mDate').value=todayJak(); $('mVendor').value=''; $('mStatus').value=''; S.fMon={date:todayJak(),vendor:'',status:''}; renderMonitor(); };
   $('btnCsvMon').onclick=function(){
     csvExport(S.monList||applyFilters(S.visits,S.fMon),'unloading_monitor_'+(S.fMon.date||todayJak())+'.csv');
   };
@@ -1426,29 +1959,86 @@ function bindStatic(){
   $('inUrl').value=localStorage.getItem(LS.URL)||'';
   $('inUser').value=localStorage.getItem(LS.USER)||'';
   $('dDate').value=todayJak(); $('mDate').value=todayJak();
-  window.addEventListener('online',function(){$('connDot').className='dot';if(S.me)refreshData(false);});
-  window.addEventListener('offline',function(){$('connDot').className='dot off';});
+  window.addEventListener('online',function(){
+    S.online=true;
+    $('connDot').className='dot';
+    $('offlineBar').classList.remove('show');
+    // PHASE 1E — RECOVERY BEHAVIOR. Koneksi baru pulih: mungkin sudah lama
+    // offline (token sesi TTL 4 jam bisa saja sudah kedaluwarsa di server
+    // selama itu) - refreshData() akan otomatis handle lewat authFail()
+    // -> forceLogout() kalau ternyata sesi sudah tidak valid lagi.
+    if(S.me) refreshData(false);
+  });
+  window.addEventListener('offline',function(){
+    S.online=false;
+    $('connDot').className='dot off';
+    $('offlineBar').classList.add('show');
+  });
+  if(!navigator.onLine){ S.online=false; $('offlineBar').classList.add('show'); }
 }
 
 /* ================= INIT ================= */
+// SECURITY (Phase 1A.1): token tersimpan divalidasi ke server SEBELUM
+// appScreen ditampilkan (bukan optimistic-render). Kalau token sudah
+// dicabut/kedaluwarsa di server, user tetap di loginScreen - appScreen
+// tidak pernah sempat terlihat dengan sesi yang sebetulnya tidak valid.
+async function restoreSession(sess){
+  S.token=sess.token; S.me={username:sess.username,nama:sess.nama,role:sess.role};
+  S.temuanOpts=TEMUAN_FALLBACK;
+  await refreshData(false); // memvalidasi token; forceLogout() otomatis jika AUTH gagal
+  if(S.me) enterApp(true); // sukses, data bootstrap sudah dimuat - jangan fetch dobel
+  // jika S.me sudah null di sini, refreshData() sudah memanggil forceLogout()->showLogin()
+}
 document.addEventListener('DOMContentLoaded',function(){
+  ['fVendor','fPol','fSupir','fJenis','fPlan'].forEach(function(id){var el=$(id);if(el){el.addEventListener('input',function(){clearFieldError(id);});el.addEventListener('change',function(){clearFieldError(id);});}});
   bindStatic();
-  var u=localStorage.getItem(LS.USER),p=localStorage.getItem(LS.PASS);
-  if(localStorage.getItem(LS.URL)&&u&&p){
-    S.cred={u:u,p:p};
-    doLoginSilent(u,p);
+  var sess=loadSession();
+  if(sess){
+    restoreSession(sess);
   }else{
     showLogin();
   }
+  registerServiceWorker();
 });
-async function doLoginSilent(u,p){
-  try{
-    var data=await apiLogin(u,p);
-    S.me={username:data.username,nama:data.nama,role:data.role};
-    S.temuanOpts=(data.temuan_options&&data.temuan_options.length)?data.temuan_options:TEMUAN_FALLBACK;
-    enterApp();
-  }catch(e){ forceLogout(null); showLogin(e.message.replace('AUTH: ','')); }
+
+/* ================= PHASE 1E — PWA / SERVICE WORKER ================= */
+// Cache app-shell (halaman ini + manifest + ikon) supaya bisa dibuka
+// dari layar-utama walau sinyal jelek, DAN supaya pengguna tidak
+// terjebak di versi lama tanpa sadar (stale cache) - lihat sw.js untuk
+// strategi cache lengkap. sw.js WAJIB ada satu folder dengan file ini
+// di GitHub Pages (bukan inline - service worker harus file terpisah).
+function registerServiceWorker(){
+  if(!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('sw.js').then(function(reg){
+    // Sudah ada SW versi baru yang terpasang & menunggu (halaman lama
+    // masih dipakai tab ini) -> tawarkan reload, jangan diam-diam.
+    if(reg.waiting) showUpdateBar(reg.waiting);
+    reg.addEventListener('updatefound',function(){
+      var sw=reg.installing;
+      if(!sw) return;
+      sw.addEventListener('statechange',function(){
+        if(sw.state==='installed' && navigator.serviceWorker.controller){
+          showUpdateBar(sw);
+        }
+      });
+    });
+  }).catch(function(){ /* SW gagal daftar - app tetap jalan tanpa fitur PWA */ });
+  // RECOVERY: begitu SW baru mengambil alih kontrol, reload SEKALI supaya
+  // halaman ini (dan seluruh asset-nya) benar-benar dari versi baru, bukan
+  // campuran shell-lama + data-baru.
+  var reloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+    if(reloaded) return; reloaded=true;
+    window.location.reload();
+  });
 }
+function showUpdateBar(waitingSw){
+  var bar=$('updateBar');
+  if(!bar||bar.classList.contains('show')) return;
+  bar.classList.add('show');
+  $('btnUpdateReload').onclick=function(){ waitingSw.postMessage({type:'SKIP_WAITING'}); };
+}
+
 </script>
 </body>
 </html>
