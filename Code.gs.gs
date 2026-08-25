@@ -1915,10 +1915,7 @@ function telegramInput_(data, byUser) {
 
 function doPost(e) {
   // ... existing code ...
-  // ADD case telegram inside the switch
-  case 'telegram':
-    requireRole_(user, [ROLES.ADMIN]);
-    result = telegramInput_(data, user);
-    break;
+  // ADD case telegram inside the switch (already added at line 871)
+
   // ... existing code continues
 }
