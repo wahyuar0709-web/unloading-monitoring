@@ -713,8 +713,8 @@ details.tbl-wrap .inner{padding:0 15px 15px}
 <script>
 'use strict';
 /* ================= KONFIG & STATE ================= */
-var APP_VERSION='2.2.5';
-var APP_BUILD_NOTE='fix: refresh tidak lagi balik ke login (sesi backend sekarang persisten)';
+var APP_VERSION='2.2.6';
+var APP_BUILD_NOTE='fix: input berdekatan waktu tidak lagi hilang (antrian aksi, bukan tolak)';
 console.log('Monitoring Unloading v'+APP_VERSION+' — '+APP_BUILD_NOTE);
 var LS = { URL:'unl_url', USER:'unl_user', MODE:'unl_mode', SESS:'unl_sess' };
 var SATUAN_OPTS = ['Pallet','Palet','Bags','box','Dus','Drum','pcs','tanki','Pail','Roll','Unit','Lainnya'];
@@ -1331,13 +1331,38 @@ function renderQueue(){
 }
 
 /* ================= AKSI TRUCK ================= */
-async function actTruk(act,id,extra,reqId){
-  if(S.busy){toast('Masih ada proses berjalan, tunggu sebentar...','');return;}
+/* ================= ANTRIAN AKSI =================
+   BUGFIX (input berdekatan waktu -> input terakhir hilang): S.busy dulu
+   dipakai sebagai penjaga "tolak kalau ada proses lain jalan" - aksi kedua
+   yang datang SELAGI aksi pertama masih diproses ke server (GAS bisa makan
+   beberapa detik, apalagi cold start) DIBUANG DIAM-DIAM tanpa pernah
+   otomatis diulang (submitTruck malah tanpa toast sama sekali). Operator
+   yang input dua hal berturut-turut dengan cepat (mis. dua truk tiba
+   nyaris bersamaan) jadi kehilangan input terakhirnya tanpa sadar.
+   FIX: aksi yang datang selagi sibuk TIDAK dibuang - masuk antrian dan
+   otomatis dijalankan begitu aksi sebelumnya selesai, satu per satu. */
+var S_ACTION_QUEUE=[];
+function queueAction_(fn){
+  S_ACTION_QUEUE.push(fn);
+  drainActionQueue_();
+}
+async function drainActionQueue_(){
+  if(S.busy) return; // sudah ada proses drain jalan - dia yang akan ambil antrian ini
   S.busy=true;
-  // RETRY SEMANTICS (aksi tulis): TIDAK di-auto-retry seperti refreshData().
-  // Aksi ini mengubah state fisik (status truk, dst.) - retry harus
-  // sepengetahuan operator (tombol retry di toast), bukan otomatis diam-diam.
-  // Aman diulang berkali-kali karena reqId dipertahankan sama lintas retry
+  try{
+    while(S_ACTION_QUEUE.length){
+      var fn=S_ACTION_QUEUE.shift();
+      try{ await fn(); }catch(e){ /* tiap fn sudah urus toast error-nya sendiri */ }
+    }
+  } finally {
+    S.busy=false;
+  }
+}
+function actTruk(act,id,extra,reqId){
+  queueAction_(function(){ return actTrukRun_(act,id,extra,reqId); });
+}
+async function actTrukRun_(act,id,extra,reqId){
+  // reqId sama dipakai lintas retry - lihat komentar MUTATING_ACTIONS di apiCall().
   if(!reqId)reqId=genRequestId();
   try{
     var payload={kode_kedatangan:id};
@@ -1348,7 +1373,7 @@ async function actTruk(act,id,extra,reqId){
   }catch(e){
     if(authFail(e.message)){forceLogout(e.message.replace('AUTH: ',''));return;}
     toast(e.message,'err',function(){actTruk(act,id,extra,reqId);});
-  }finally{S.busy=false;}
+  }
 }
 function findVisit(id){ 
   var v=S.visits.filter(function(v){return v.kode_kedatangan===id;})[0]; 
@@ -1655,30 +1680,36 @@ function validateTruckForm(){
 }
 
 async function submitTruck(reqId){
-  if(S.busy)return;
   if(!validateTruckForm())return;
   // reqId sama dipakai lintas retry - lihat komentar di actTruk().
   if(!reqId)reqId=genRequestId();
-  var vendor=$('fVendor').value,pol=$('fPol').value.trim().toUpperCase();
-  var payload={vendor:vendor,no_polisi:pol,nama_supir:$('fSupir').value.trim(),no_po:$('fSJ').value.trim(),jenis_transaksi:$('fJenis').value,catatan:$('fCatatan').value.trim()};
-  var btn=$('btnSubmitTruck');
-  S.busy=true;btn.disabled=true;
+  // PENTING: payload ditangkap SEKARANG (saat tombol diklik), bukan nanti
+  // saat giliran dieksekusi di antrian - supaya kalau operator langsung
+  // mengisi form lagi untuk truk berikutnya sebelum submit pertama selesai,
+  // input pertama tidak ikut tertimpa nilai form yang sudah berubah.
+  var payload={vendor:$('fVendor').value,no_polisi:$('fPol').value.trim().toUpperCase(),
+    nama_supir:$('fSupir').value.trim(),no_po:$('fSJ').value.trim(),
+    jenis_transaksi:$('fJenis').value,catatan:$('fCatatan').value.trim()};
+  var action='createWalkin';
+  if(S.sumber==='jadwal'){
+    if(!$('fPlan').value){toast('Isi rencana tiba','err');return;}
+    payload.plan_tiba=new Date($('fPlan').value).toISOString();
+    action='createSchedule';
+  }
+  var btn=$('btnSubmitTruck'); btn.disabled=true;
+  queueAction_(function(){ return submitTruckRun_(action,payload,reqId,btn); });
+}
+async function submitTruckRun_(action,payload,reqId,btn){
   try{
-    if(S.sumber==='jadwal'){
-      if(!$('fPlan').value){toast('Isi rencana tiba','err');return;}
-      payload.plan_tiba=new Date($('fPlan').value).toISOString();
-      await apiPost('createSchedule',payload,reqId);
-    }else{
-      await apiPost('createWalkin',payload,reqId);
-    }
+    await apiPost(action,payload,reqId);
     ['fPol','fSupir','fSJ','fCatatan'].forEach(function(id){$(id).value='';});
     toast('Truk tersimpan','ok');
     S.tab='queue';renderAll();
     await refreshData(true);
   }catch(e){
     if(authFail(e.message)){forceLogout(e.message.replace('AUTH: ',''));return;}
-    toast(e.message,'err',function(){submitTruck(reqId);});
-  }finally{S.busy=false;btn.disabled=false;}
+    toast(e.message,'err',function(){queueAction_(function(){return submitTruckRun_(action,payload,reqId,btn);});});
+  }finally{btn.disabled=false;}
 }
 
 /* ================= ADMIN ================= */
