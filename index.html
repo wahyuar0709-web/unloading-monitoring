@@ -88,6 +88,12 @@ h1,h2,h3,.login-card h1,.panel h2{font-family:var(--font-h)}
 ::-webkit-scrollbar-thumb{background:color-mix(in srgb, var(--muted) 35%, transparent);border-radius:99px;border:2px solid transparent;background-clip:padding-box}
 
 /* ============ LOGIN ============ */
+#restoreScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:
+  radial-gradient(1000px 560px at 12% -6%, rgba(111,118,245,.4), transparent 60%),
+  radial-gradient(760px 520px at 104% 108%, rgba(34,211,238,.22), transparent 60%),
+  linear-gradient(160deg,#080b18 0%,#111a35 55%,#1a2350 100%)}
+#restoreScreen .rs-logo{width:52px;height:52px;color:#fff;opacity:.92}
+#restoreScreen .rs-spin{width:22px;height:22px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite}
 #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px;position:relative;overflow:hidden;background:
   radial-gradient(1000px 560px at 12% -6%, rgba(111,118,245,.4), transparent 60%),
   radial-gradient(760px 520px at 104% 108%, rgba(34,211,238,.22), transparent 60%),
@@ -512,8 +518,14 @@ details.tbl-wrap .inner{padding:0 15px 15px}
 <symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
 </svg>
 
+<!-- ================= RESTORE (loading sesi) ================= -->
+<div id="restoreScreen">
+  <svg class="rs-logo" aria-hidden="true"><use href="#i-logo-mark"/></svg>
+  <span class="rs-spin"></span>
+</div>
+
 <!-- ================= LOGIN ================= -->
-<div id="loginScreen">
+<div id="loginScreen" class="hide">
   <div class="login-wrap">
     <div class="login-brand">
       <div class="login-logo"><svg class="ic" aria-hidden="true"><use href="#i-logo-mark"/></svg></div>
@@ -603,6 +615,10 @@ details.tbl-wrap .inner{padding:0 15px 15px}
         </div>
         <label>Keterangan</label>
         <textarea id="fCatatan" rows="2" placeholder="Opsional"></textarea>
+        <div id="wrapWaktuTibaManual" class="hide">
+          <label>Waktu Tiba (manual) <span class="helper">Opsional &middot; admin saja</span></label>
+          <input id="fWaktuTiba" type="datetime-local">
+        </div>
         <button class="btn" id="btnSubmitTruck"><svg class="ic" aria-hidden="true"><use href="#i-save"/></svg> Simpan</button>
       </div>
     </section>
@@ -713,8 +729,8 @@ details.tbl-wrap .inner{padding:0 15px 15px}
 <script>
 'use strict';
 /* ================= KONFIG & STATE ================= */
-var APP_VERSION='2.2.6';
-var APP_BUILD_NOTE='fix: input berdekatan waktu tidak lagi hilang (antrian aksi, bukan tolak)';
+var APP_VERSION='2.2.8';
+var APP_BUILD_NOTE='fix: tidak lagi flash ke layar login saat refresh/reload otomatis (loading state saat validasi sesi)';
 console.log('Monitoring Unloading v'+APP_VERSION+' — '+APP_BUILD_NOTE);
 var LS = { URL:'unl_url', USER:'unl_user', MODE:'unl_mode', SESS:'unl_sess' };
 var SATUAN_OPTS = ['Pallet','Palet','Bags','box','Dus','Drum','pcs','tanki','Pail','Roll','Unit','Lainnya'];
@@ -958,6 +974,7 @@ function confirmDialog(msg,cb,danger,confirmLabel){
 
 /* ================= LOGIN FLOW ================= */
 function showLogin(errMsg){
+  $('restoreScreen').classList.add('hide');
   $('appScreen').classList.add('hide'); $('loginScreen').classList.remove('hide');
   stopAllTimers();
   if(errMsg){ var e=$('loginErr'); e.textContent=errMsg; e.classList.remove('hide'); }
@@ -976,6 +993,7 @@ async function doLogin(u,p){
   finally{ btn.disabled=false; btn.textContent='Masuk'; }
 }
 function enterApp(skipRefresh){
+  $('restoreScreen').classList.add('hide');
   $('loginScreen').classList.add('hide'); $('appScreen').classList.remove('hide');
   $('loginErr').classList.add('hide');
   $('whoName').textContent=S.me.nama;
@@ -983,6 +1001,7 @@ function enterApp(skipRefresh){
   $('appVersion').textContent='Versi '+APP_VERSION+' — '+APP_BUILD_NOTE;
   $('tabAdmin').style.display = S.me.role==='ADMIN'?'':'none';
   document.querySelector('[data-tab="form"]').style.display = canAct()?'':'none';
+  setSumber(S.sumber);
   if(!canAct()&&S.tab==='form')S.tab='queue';
   if(!isAdmin()&&S.tab==='admin')S.tab='queue';
   setMode(localStorage.getItem(LS.MODE)||(window.innerWidth>=1024?'monitor':'operasi'));
@@ -1380,6 +1399,20 @@ function findVisit(id){
   return v ? v : null; 
 }
 
+function modalTiba(v){
+  if(!isAdmin()){
+    confirmDialog('Konfirmasi truk '+v.no_polisi+' sudah tiba?',function(){actTruk('markTiba',v.kode_kedatangan,{operator_tiba:S.me.nama});});
+    return;
+  }
+  openModal('Konfirmasi Tiba',v.no_polisi+' - '+v.vendor,
+    '<label>Waktu Tiba (manual) <span class="helper">Opsional &middot; admin saja</span></label><input id="mWaktuTiba" type="datetime-local">',
+    null,
+    [{label:ic('check-c')+' Konfirmasi',cls:'',onClick:function(){
+        var extra={operator_tiba:S.me.nama};
+        if($('mWaktuTiba').value)extra.waktu_tiba=new Date($('mWaktuTiba').value).toISOString();
+        closeModal(); actTruk('markTiba',v.kode_kedatangan,extra);
+      }},{label:'Batal',cls:'sec'}]);
+}
 function modalMulai(v){
   var occupied={};
   S.visits.forEach(function(x){ if(x.status==='Sedang Bongkar'&&x.kode_kedatangan!==v.kode_kedatangan&&x.dock)occupied[x.dock]=1; });
@@ -1389,11 +1422,14 @@ function modalMulai(v){
     opts+='<option value="'+i+'"'+dis+'>'+(dis?'Dock '+i+' (terpakai)':'Dock '+i)+'</option>';
   }
   openModal('Mulai Bongkar',v.no_polisi+' - '+v.vendor,
-    '<label>Pilih Dock/Bay <span style="color:var(--bad)">*</span></label><select id="mDock">'+opts+'</select>',
+    '<label>Pilih Dock/Bay <span style="color:var(--bad)">*</span></label><select id="mDock">'+opts+'</select>'+
+    (isAdmin()?'<label>Waktu Mulai (manual) <span class="helper">Opsional &middot; admin saja</span></label><input id="mWaktuMulai" type="datetime-local">':''),
     function(){ $('mDock').focus(); },
     [{label:ic('play')+' Mulai',cls:'',onClick:function(){
         var d=$('mDock').value; if(!d){toast('Pilih dock dulu','err');return;}
-        closeModal(); actTruk('markMulaiBongkar',v.kode_kedatangan,{dock:d});
+        var extra={dock:d};
+        var elW=$('mWaktuMulai'); if(elW&&elW.value)extra.waktu_mulai=new Date(elW.value).toISOString();
+        closeModal(); actTruk('markMulaiBongkar',v.kode_kedatangan,extra);
       }},{label:'Batal',cls:'sec'}]);
 }
 function modalSelesai(v){
@@ -1403,7 +1439,8 @@ function modalSelesai(v){
     '<label>QTY <span style="color:var(--bad)">*</span></label><input id="mQty" type="number" min="1" step="any" inputmode="decimal" placeholder="Contoh: 34">'+
     '<label>Satuan <span style="color:var(--bad)">*</span></label><select id="mSat">'+satuan+'</select>'+
     '<label>Temuan Abnormal <span style="color:var(--bad)">*</span></label><div class="radio-set" id="radTemuan">'+temuan+'</div>'+
-    '<label>Keterangan tambahan</label><input id="mKat" placeholder="Opsional">',
+    '<label>Keterangan tambahan</label><input id="mKat" placeholder="Opsional">'+
+    (isAdmin()?'<label>Waktu Selesai (manual) <span class="helper">Opsional &middot; admin saja</span></label><input id="mWaktuSelesai" type="datetime-local">':''),
     function(){
       $('mQty').focus();
       $('radTemuan').addEventListener('click',function(ev){
@@ -1418,7 +1455,9 @@ function modalSelesai(v){
         var t=document.querySelector('input[name="mTemuan"]:checked');
         if(!t){toast('Pilih temuan abnormal','err');return;}
         var sat=$('mSat').value, ket=$('mKat').value;
-        closeModal(); actTruk('markSelesaiBongkar',v.kode_kedatangan,{qty:q,satuan:sat,temuan:t.value,keterangan:ket});
+        var extra={qty:q,satuan:sat,temuan:t.value,keterangan:ket};
+        var elW=$('mWaktuSelesai'); if(elW&&elW.value)extra.waktu_selesai=new Date(elW.value).toISOString();
+        closeModal(); actTruk('markSelesaiBongkar',v.kode_kedatangan,extra);
       }},{label:'Batal',cls:'sec'}]);
 }
 function modalEdit(v){
@@ -1645,6 +1684,7 @@ function setSumber(v){
   S.sumber=v;
   document.querySelectorAll('#segSumber button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-v')===v);});
   $('wrapPlan').classList.toggle('hide',v!=='jadwal');
+  $('wrapWaktuTibaManual').classList.toggle('hide',v==='jadwal'||!isAdmin());
   renderFormHint();
 }
 /**
@@ -1695,6 +1735,8 @@ async function submitTruck(reqId){
     if(!$('fPlan').value){toast('Isi rencana tiba','err');return;}
     payload.plan_tiba=new Date($('fPlan').value).toISOString();
     action='createSchedule';
+  } else if(isAdmin()&&$('fWaktuTiba').value){
+    payload.waktu_tiba=new Date($('fWaktuTiba').value).toISOString();
   }
   var btn=$('btnSubmitTruck'); btn.disabled=true;
   queueAction_(function(){ return submitTruckRun_(action,payload,reqId,btn); });
@@ -1702,7 +1744,7 @@ async function submitTruck(reqId){
 async function submitTruckRun_(action,payload,reqId,btn){
   try{
     await apiPost(action,payload,reqId);
-    ['fPol','fSupir','fSJ','fCatatan'].forEach(function(id){$(id).value='';});
+    ['fPol','fSupir','fSJ','fCatatan','fWaktuTiba'].forEach(function(id){$(id).value='';});
     toast('Truk tersimpan','ok');
     S.tab='queue';renderAll();
     await refreshData(true);
@@ -1956,7 +1998,7 @@ function bindStatic(){
     var id=b.getAttribute('data-id'),act=b.getAttribute('data-act');
     var v=findVisit(id);
     if(!v){toast('Data antrean tidak ditemukan','err');return;}
-    if(act==='tiba')confirmDialog('Konfirmasi truk '+v.no_polisi+' sudah tiba?',function(){actTruk('markTiba',id,{operator_tiba:S.me.nama});});
+    if(act==='tiba')modalTiba(v);
     else if(act==='mulai')modalMulai(v);
     else if(act==='selesai')modalSelesai(v);
     else if(act==='jeda')confirmDialog('Catat mulai istirahat?',function(){actTruk('pauseBreak',id);});
