@@ -1,19 +1,23 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./design-system/**/*.md",
+  ],
   theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
     extend: {
       fontFamily: {
-        sans: [
-          '"Segoe UI"',
-          "system-ui",
-          "-apple-system",
-          "Roboto",
-          "Arial",
-          "sans-serif",
-        ],
-        mono: ['"Cascadia Mono"', "Consolas", "monospace"],
+        sans: ["Outfit", "Work Sans", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Arial", "sans-serif'],
+        heading: ["Poppins", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -49,13 +53,28 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        // RDI Design System Colors
+        rdi: {
+          navy: "#1E3A5F",
+          "navy-light": "#2E426E",
+          "navy-hover": "#3E5281",
+          green: "#059669",
+          "green-dark": "#047857",
+          "green-light": "#CCFBCB",
+          "green-soft": "#D1F9C2",
+          slate: "#F8FAFC",
+          "slate-dark": "#0F172A",
+          "slate-light": "#F1F3F5",
+          "slate-mute": "#475569",
+          "slate-border": "#E4E7EB",
+          "slate-muted": "#F2F3F4",
+          red: "#DC2626",
+          "red-light": "#F87171",
+          "orange": "#F59E0B",
+          "orange-light": "#FBBF24",
+        },
       },
     },
-  },
-  plugins: [require("tailwindcss-animate")],
+    plugins: [require("tailwindcss-animate")],
+  };
 };
